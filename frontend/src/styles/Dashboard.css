@@ -1,0 +1,220 @@
+.dashboard {
+  background: white;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.dashboard h1 {
+  color: #333;
+  margin-bottom: 40px;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.routes-by-month {
+  margin-top: 30px;
+}
+
+.month-section {
+  margin-bottom: 35px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  transition: box-shadow 0.3s;
+}
+
+.month-section:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.month-title-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #D97B3C 0%, #c97833 100%);
+  color: white;
+  border: none;
+  padding: 24px 20px;
+  font-size: 22px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  letter-spacing: 0.3px;
+}
+
+.month-title-btn:hover {
+  background: linear-gradient(135deg, #c97833 0%, #b86b2a 100%);
+  box-shadow: 0 6px 20px rgba(217, 123, 60, 0.4);
+  transform: translateY(-2px);
+}
+
+.month-title-btn:active {
+  transform: translateY(0);
+}
+
+.routes-by-day {
+  padding: 25px;
+  background: #fafafa;
+}
+
+.day-group {
+  margin-bottom: 30px;
+  padding-bottom: 25px;
+  border-bottom: 2px solid #e8e8e8;
+}
+
+.day-group:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.day-title {
+  color: #D97B3C;
+  font-size: 18px;
+  margin-bottom: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.route-item {
+  background: white;
+  border-left: 5px solid #D97B3C;
+  padding: 18px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f0f0f0;
+}
+
+.route-item:hover {
+  background: #fff;
+  box-shadow: 0 6px 16px rgba(217, 123, 60, 0.15);
+  transform: translateX(6px);
+  border-color: #D97B3C;
+}
+
+.route-name {
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 17px;
+  margin-bottom: 10px;
+}
+
+.route-time {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.route-attendees {
+  color: #999;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.no-routes {
+  text-align: center;
+  padding: 80px 20px;
+  color: #999;
+}
+
+.no-routes p {
+  font-size: 18px;
+  margin-bottom: 30px;
+  color: #666;
+}
+
+.no-routes button {
+  background: linear-gradient(135deg, #D97B3C 0%, #c97833 100%);
+  color: white;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(217, 123, 60, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.no-routes button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(217, 123, 60, 0.4);
+  background: linear-gradient(135deg, #c97833 0%, #b86b2a 100%);
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #666;
+  font-size: 16px;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #f5c6cb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 20px 10px;
+  }
+
+  .dashboard h1 {
+    font-size: 24px;
+    margin-bottom: 30px;
+  }
+
+  .month-title-btn {
+    font-size: 18px;
+    padding: 16px 14px;
+  }
+
+  .routes-by-day {
+    padding: 16px;
+  }
+
+  .day-title {
+    font-size: 16px;
+  }
+
+  .route-item {
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .route-name {
+    font-size: 15px;
+  }
+
+  .route-time,
+  .route-attendees {
+    font-size: 12px;
+  }
+}

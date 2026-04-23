@@ -1,0 +1,310 @@
+.route-detail-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.modal-header h2 {
+  color: #1a1a1a;
+  font-size: 22px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #999;
+  transition: all 0.2s;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #333;
+  transform: scale(1.2);
+}
+
+.route-content {
+  padding: 24px;
+}
+
+.route-info-section {
+  background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%);
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  border-left: 4px solid #D97B3C;
+  border: 1px solid #f0f0f0;
+}
+
+.route-info-section p {
+  color: #333;
+  margin: 10px 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.maps-section {
+  margin-bottom: 24px;
+}
+
+.attendees-section {
+  background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%);
+  padding: 18px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  border: 1px solid #f0f0f0;
+  border-left: 4px solid #D97B3C;
+}
+
+.attendees-section h3 {
+  color: #1a1a1a;
+  font-size: 17px;
+  margin: 0 0 16px 0;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.attendees-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.attendees-list li {
+  padding: 12px 0;
+  color: #666;
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+  transition: color 0.2s;
+}
+
+.attendees-list li:hover {
+  color: #D97B3C;
+}
+
+.attendees-list li:last-child {
+  border-bottom: none;
+}
+
+.no-attendees {
+  color: #999;
+  font-size: 14px;
+  margin: 0;
+  font-style: italic;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.button-group .btn {
+  flex: 1;
+  min-width: 120px;
+}
+
+.btn {
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn-attend {
+  background: linear-gradient(135deg, #D97B3C 0%, #c97833 100%);
+  color: white;
+}
+
+.btn-attend:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 123, 60, 0.4);
+  background: linear-gradient(135deg, #c97833 0%, #b86b2a 100%);
+}
+
+.btn-remove {
+  background: #ffe4e6;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+.btn-remove:hover:not(:disabled) {
+  background: #ffcdd2;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(198, 40, 40, 0.2);
+}
+
+.btn-whatsapp {
+  background: linear-gradient(135deg, #25d366 0%, #20ba5a 100%);
+  color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-whatsapp:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+  background: linear-gradient(135deg, #20ba5a 0%, #1aa847 100%);
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #D97B3C 0%, #c97833 100%);
+  color: white;
+}
+
+.btn-edit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 123, 60, 0.4);
+  background: linear-gradient(135deg, #c97833 0%, #b86b2a 100%);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #ff5252 0%, #ff4081 100%);
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+  background: linear-gradient(135deg, #ff4081 0%, #f50057 100%);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #D97B3C 0%, #c97833 100%);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(217, 123, 60, 0.4);
+  background: linear-gradient(135deg, #c97833 0%, #b86b2a 100%);
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #e8e8e8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border-left: 4px solid #f5c6cb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.edit-form {
+  background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%);
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #f0f0f0;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  font-size: 14px;
+  letter-spacing: 0.2px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #D97B3C;
+  box-shadow: 0 0 0 4px rgba(217, 123, 60, 0.15);
+  background: white;
+}
+
+@media (max-width: 600px) {
+  .route-detail-modal {
+    max-height: 95vh;
+    max-width: 95vw;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  .route-content {
+    padding: 16px;
+  }
+
+  .button-group {
+    gap: 8px;
+  }
+
+  .button-group .btn {
+    min-width: 80px;
+    font-size: 13px;
+  }
+}

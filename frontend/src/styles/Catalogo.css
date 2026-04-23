@@ -1,0 +1,57 @@
+.catalogo {
+  background: white;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.catalogo-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.catalogo h1 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 28px;
+}
+
+.rutas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.ruta-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.ruta-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ruta-card h3 {
+  color: #333;
+  margin: 0 0 10px 0;
+  font-size: 16px;
+}
+
+.ruta-card p {
+  color: #666;
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .catalogo {
+    padding: 20px 10px;
+  }
+
+  .rutas-grid {
+    grid-template-columns: 1fr;
+  }
+}
