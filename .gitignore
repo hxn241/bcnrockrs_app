@@ -71,3 +71,6 @@ Thumbs.db
 # Project specific
 *.sqlite
 *.sqlite3
+
+# Keep BCN Rockers SQLite DB in git (never ignore)
+!backend/rutas_moto.db

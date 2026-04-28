@@ -1,11 +1,11 @@
 /**
  * URL base del API en el navegador.
  * Si abres el front por IP (p. ej. móvil en http://192.168.1.41:3001), apuntamos
- * al mismo host con el puerto definido en VITE_API_URL (p. ej. 8001), no a localhost.
+ * al mismo host con el puerto definido en VITE_API_URL (p. ej. 8002), no a localhost.
  */
 export function getApiBaseUrl() {
   const fromEnv = import.meta.env.VITE_API_URL
-  const fallback = 'http://localhost:8000'
+  const fallback = 'http://localhost:8002'
   const base = fromEnv || fallback
 
   if (typeof window === 'undefined') {

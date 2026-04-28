@@ -41,8 +41,8 @@ npm run dev
 ## 🌐 Acceso
 
 - **Frontend**: http://localhost:3000
-- **Backend**: http://localhost:8000
-- **Documentación API**: http://localhost:8000/docs
+- **Backend**: http://localhost:8002
+- **Documentación API**: http://localhost:8002/docs
 
 ## 🧪 Primer uso
 
@@ -59,7 +59,7 @@ npm run dev
 
 ```
 bcnrockers_app/
-├── backend/         ← API FastAPI (puerto 8000)
+├── backend/         ← API FastAPI (puerto 8002)
 │   ├── app/
 │   │   ├── main.py          (aplicación)
 │   │   ├── models/          (base de datos)
@@ -104,7 +104,7 @@ DEBUG=True
 
 ### Frontend (frontend/.env)
 ```
-VITE_API_URL=http://localhost:8000
+VITE_API_URL=http://localhost:8002
 ```
 
 ## 🆘 Troubleshooting
@@ -119,11 +119,11 @@ cd backend
 source venv/bin/activate
 ```
 
-### Puerto 8000/3000 ya en uso
+### Puerto 8002/3000 ya en uso
 → Cambia el puerto:
 ```bash
-# Backend en 8001
-python -m uvicorn app.main:app --reload --port 8001
+# Backend en 8002 (por defecto)
+python -m uvicorn app.main:app --reload --port 8002
 
 # Frontend en 3001
 npm run dev -- --port 3001
@@ -132,7 +132,7 @@ npm run dev -- --port 3001
 ### Error de CORS
 → Verifica que `frontend/.env` tiene:
 ```
-VITE_API_URL=http://localhost:8000
+VITE_API_URL=http://localhost:8002
 ```
 
 ## 📚 Documentación Completa
@@ -155,4 +155,4 @@ Ver [README_NEW.md](README_NEW.md) para:
 
 ## ❓ Preguntas
 
-Consulta la documentación de la API en: **http://localhost:8000/docs**
+Consulta la documentación de la API en: **http://localhost:8002/docs**
