@@ -46,10 +46,10 @@ cp .env.example .env
 # python -m alembic upgrade head
 
 # Iniciar servidor de desarrollo
-python -m uvicorn app.main:app --reload --port 8001
+python -m uvicorn app.main:app --reload --port 8002
 ```
 
-El servidor estará disponible en `http://localhost:8001`
+El servidor estará disponible en `http://localhost:8002`
 
 ### Frontend (React + Vite)
 
@@ -83,7 +83,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=30
 ### Variables de Entorno Frontend (.env)
 
 ```
-VITE_API_URL=http://localhost:8001
+VITE_API_URL=http://localhost:8002
 ```
 
 ## 🚀 Uso

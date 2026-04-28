@@ -1,12 +1,12 @@
 .route-detail-modal {
-  background: white;
+  background: var(--bcn-cream-warm);
   border-radius: 12px;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 25px 80px rgba(42, 36, 32, 0.2);
   max-width: 600px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--bcn-border);
 }
 
 .modal-header {
@@ -14,10 +14,10 @@
   justify-content: space-between;
   align-items: center;
   padding: 24px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--bcn-border);
   position: sticky;
   top: 0;
-  background: white;
+  background: var(--bcn-cream-warm);
   z-index: 10;
 }
 
@@ -56,7 +56,7 @@
   padding: 18px;
   border-radius: 10px;
   margin-bottom: 24px;
-  border-left: 4px solid #D97B3C;
+  border-left: 4px solid var(--bcn-terracotta-bright);
   border: 1px solid #f0f0f0;
 }
 
@@ -71,13 +71,46 @@
   margin-bottom: 24px;
 }
 
+.maps-gmaps-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.btn-maps-gmaps {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #4285f4 0%, #3367d6 100%);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-maps-gmaps:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+  color: #fff;
+}
+
+.location-section {
+  margin-bottom: 20px;
+}
+
 .attendees-section {
   background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%);
   padding: 18px;
   border-radius: 10px;
   margin-bottom: 24px;
   border: 1px solid #f0f0f0;
-  border-left: 4px solid #D97B3C;
+  border-left: 4px solid var(--bcn-terracotta-bright);
 }
 
 .attendees-section h3 {
@@ -103,7 +136,7 @@
 }
 
 .attendees-list li:hover {
-  color: #D97B3C;
+  color: var(--bcn-terracotta-bright);
 }
 
 .attendees-list li:last-child {
@@ -147,14 +180,14 @@
 }
 
 .btn-attend {
-  background: linear-gradient(135deg, #D97B3C 0%, #c97833 100%);
+  background: linear-gradient(135deg, var(--bcn-terracotta-bright) 0%, var(--bcn-terracotta) 100%);
   color: white;
 }
 
 .btn-attend:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(217, 123, 60, 0.4);
-  background: linear-gradient(135deg, #c97833 0%, #b86b2a 100%);
+  background: linear-gradient(135deg, var(--bcn-terracotta) 0%, var(--bcn-terracotta-mid) 100%);
 }
 
 .btn-remove {
@@ -185,14 +218,14 @@
 }
 
 .btn-edit {
-  background: linear-gradient(135deg, #D97B3C 0%, #c97833 100%);
+  background: linear-gradient(135deg, var(--bcn-terracotta-bright) 0%, var(--bcn-terracotta) 100%);
   color: white;
 }
 
 .btn-edit:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(217, 123, 60, 0.4);
-  background: linear-gradient(135deg, #c97833 0%, #b86b2a 100%);
+  background: linear-gradient(135deg, var(--bcn-terracotta) 0%, var(--bcn-terracotta-mid) 100%);
 }
 
 .btn-danger {
@@ -207,14 +240,14 @@
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #D97B3C 0%, #c97833 100%);
+  background: linear-gradient(135deg, var(--bcn-terracotta-bright) 0%, var(--bcn-terracotta) 100%);
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(217, 123, 60, 0.4);
-  background: linear-gradient(135deg, #c97833 0%, #b86b2a 100%);
+  background: linear-gradient(135deg, var(--bcn-terracotta) 0%, var(--bcn-terracotta-mid) 100%);
 }
 
 .btn-secondary {
@@ -251,6 +284,13 @@
   border: 1px solid #f0f0f0;
 }
 
+.edit-hint-encuentro {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #666;
+  line-height: 1.4;
+}
+
 .form-group {
   margin-bottom: 18px;
 }
@@ -280,7 +320,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #D97B3C;
+  border-color: var(--bcn-terracotta-bright);
   box-shadow: 0 0 0 4px rgba(217, 123, 60, 0.15);
   background: white;
 }

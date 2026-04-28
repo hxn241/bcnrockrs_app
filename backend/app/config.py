@@ -13,11 +13,15 @@ class Settings(BaseSettings):
     # CORS
     cors_origins: list = [
         "http://localhost:3000",
-        "http://localhost:8000",
+        "http://localhost:3001",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://localhost:8002",
+        "http://192.168.1.41:3001",
         "https://hexen88.dynv6.net:3000",
-        "https://hexen88.dynv6.net:8001",
+        "https://hexen88.dynv6.net:8002",
         "http://hexen88.dynv6.net:3000",
-        "http://hexen88.dynv6.net:8001"
+        "http://hexen88.dynv6.net:8002"
     ]
     
     # App

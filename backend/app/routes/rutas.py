@@ -2,7 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models import User, Ruta
+from app.models import User, Ruta, RutaPublicada, Asistente
+from app.models.models import RutaHistorico
 from app.schemas import RutaCreate, RutaResponse, RutaUpdate
 from app.auth import get_current_user, get_admin_user
 
@@ -60,7 +61,37 @@ def delete_route(
     route = db.query(Ruta).filter(Ruta.id == ruta_id).first()
     if not route:
         raise HTTPException(status_code=404, detail="Route not found")
-    
+
+    tiene_activa = (
+        db.query(RutaPublicada)
+        .filter(
+            RutaPublicada.ruta_id == ruta_id,
+            RutaPublicada.is_active.is_(True),
+        )
+        .first()
+    )
+    if tiene_activa:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se puede eliminar del catálogo: esta ruta tiene salidas publicadas en el calendario. Despublica o elimina esas salidas primero.",
+        )
+
+    # Sin publicaciones activas: limpiar restos (inactivas, historial) y el registro del catálogo
+    publicaciones = (
+        db.query(RutaPublicada).filter(RutaPublicada.ruta_id == ruta_id).all()
+    )
+    pub_ids = [p.id for p in publicaciones]
+    if pub_ids:
+        db.query(Asistente).filter(Asistente.ruta_publicada_id.in_(pub_ids)).delete(
+            synchronize_session=False
+        )
+    db.query(RutaPublicada).filter(RutaPublicada.ruta_id == ruta_id).delete(
+        synchronize_session=False
+    )
+    db.query(RutaHistorico).filter(RutaHistorico.ruta_id == ruta_id).delete(
+        synchronize_session=False
+    )
+
     db.delete(route)
     db.commit()
     return {"message": "Route deleted"}

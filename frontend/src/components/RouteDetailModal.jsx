@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { rutasPublicadasService } from '../services/api'
 import MapPreview from './MapPreview'
 import LocationLink from './LocationLink'
@@ -11,7 +11,28 @@ export default function RouteDetailModal({ route, user, onClose, onRefresh }) {
   const [isEditMode, setIsEditMode] = useState(false)
   const [editDate, setEditDate] = useState(route.dia_ruta)
   const [editTime, setEditTime] = useState(route.hora_ruta)
+  const [editEncuentro, setEditEncuentro] = useState(
+    () => route.link_encuentro_personalizado || route.ruta?.link_encuentro || ''
+  )
   const isUserAttending = asistentes.some(a => a.user_id === user?.id)
+
+  const canManageRoute =
+    Boolean(user) && (user.is_admin === true || Number(user.id) === Number(route.organizador_id))
+
+  const meetingUrl = route.link_encuentro_personalizado || route.ruta?.link_encuentro
+  const meetLabel = route.link_encuentro_personalizado
+    ? 'Punto de encuentro (personalizado)'
+    : 'Punto de encuentro'
+  const restaurantUrl = route.link_restaurante_personalizado || route.ruta?.link_restaurante
+  const rutaGmapsUrl = route.ruta?.link_ruta
+  const catalogoEncuentro = route.ruta?.link_encuentro || ''
+
+  useEffect(() => {
+    if (isEditMode) return
+    setEditDate(route.dia_ruta)
+    setEditTime(route.hora_ruta)
+    setEditEncuentro(route.link_encuentro_personalizado || route.ruta?.link_encuentro || '')
+  }, [route, isEditMode])
 
   const handleAttendance = async () => {
     setLoading(true)
@@ -55,10 +76,19 @@ export default function RouteDetailModal({ route, user, onClose, onRefresh }) {
     setLoading(true)
     setError('')
     try {
-      await rutasPublicadasService.updateRoute(route.id, {
+      const trimmed = editEncuentro.trim()
+      if (!trimmed) {
+        setError('Indica un enlace de punto de encuentro o pega el del catálogo.')
+        setLoading(false)
+        return
+      }
+      const sameAsCatalogo = trimmed === (catalogoEncuentro || '').trim()
+      const payload = {
         dia_ruta: editDate,
-        hora_ruta: editTime
-      })
+        hora_ruta: editTime,
+        link_encuentro_personalizado: sameAsCatalogo ? null : trimmed
+      }
+      await rutasPublicadasService.updateRoute(route.id, payload)
       setIsEditMode(false)
       onRefresh()
     } catch (err) {
@@ -71,7 +101,15 @@ export default function RouteDetailModal({ route, user, onClose, onRefresh }) {
   const handleCancelEdit = () => {
     setEditDate(route.dia_ruta)
     setEditTime(route.hora_ruta)
+    setEditEncuentro(route.link_encuentro_personalizado || route.ruta?.link_encuentro || '')
     setIsEditMode(false)
+  }
+
+  const startEdit = () => {
+    setEditDate(route.dia_ruta)
+    setEditTime(route.hora_ruta)
+    setEditEncuentro(route.link_encuentro_personalizado || route.ruta?.link_encuentro || '')
+    setIsEditMode(true)
   }
 
   const generateRouteDetails = () => {
@@ -129,6 +167,20 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
                   disabled={loading}
                 />
               </div>
+              <div className="form-group">
+                <label htmlFor="edit-encuentro">Punto de encuentro (enlace Google Maps):</label>
+                <input
+                  id="edit-encuentro"
+                  type="url"
+                  value={editEncuentro}
+                  onChange={(e) => setEditEncuentro(e.target.value)}
+                  placeholder="https://maps.app.goo.gl/..."
+                  disabled={loading}
+                />
+                <p className="edit-hint-encuentro">
+                  Si coincide con el enlace del catálogo, se guarda el predeterminado. Déjalo distinto para un punto de encuentro solo para este día.
+                </p>
+              </div>
               <div className="button-group">
                 <button
                   className="btn btn-primary"
@@ -148,35 +200,42 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
             </div>
           ) : (
             <>
-              {/* Información básica */}
+              {/* Fecha, hora, punto de encuentro, organizador y nº participantes */}
               <div className="route-info-section">
                 <p><strong>📅 Fecha:</strong> {route.dia_ruta}</p>
                 <p><strong>🕐 Hora de Salida:</strong> {route.hora_ruta}</p>
+                <LocationLink
+                  url={meetingUrl}
+                  layout="inline"
+                  label={meetLabel}
+                />
                 <p><strong>👤 Organizador:</strong> {route.organizador?.username || 'Desconocido'}</p>
                 <p><strong>👥 Participantes:</strong> {asistentes.length}</p>
               </div>
 
-          {/* Google Maps - Recorrido */}
           <div className="maps-section">
             <MapPreview
-              url={route.ruta.link_ruta}
+              url={rutaGmapsUrl}
               title="🗺️ Recorrido"
             />
+            {rutaGmapsUrl && (
+              <div className="maps-gmaps-actions">
+                <a
+                  href={rutaGmapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-maps-gmaps"
+                >
+                  Abrir en GMaps
+                </a>
+              </div>
+            )}
           </div>
 
-          {/* Punto de Encuentro */}
-          <div className="location-section">
-            <LocationLink
-              url={route.link_encuentro_personalizado || route.ruta.link_encuentro}
-              title={route.link_encuentro_personalizado ? '📍 Punto de Encuentro (personalizado)' : '📍 Punto de Encuentro'}
-            />
-          </div>
-
-          {/* Restaurante (si existe) */}
-          {(route.link_restaurante_personalizado || route.ruta.link_restaurante) && (
+          {restaurantUrl && (
             <div className="location-section">
               <LocationLink
-                url={route.link_restaurante_personalizado || route.ruta.link_restaurante}
+                url={restaurantUrl}
                 title={route.link_restaurante_personalizado ? '🍽️ Restaurante (personalizado)' : '🍽️ Restaurante'}
               />
             </div>
@@ -216,17 +275,17 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
                 >
                   💬 WhatsApp
                 </a>
-                {user?.is_admin && (
+                {canManageRoute && (
                   <button
                     className="btn btn-edit"
-                    onClick={() => setIsEditMode(true)}
+                    onClick={startEdit}
                     disabled={loading}
-                    title="Editar fecha y hora"
+                    title="Editar ruta (fecha, hora, punto de encuentro)"
                   >
                     ✏️ Editar
                   </button>
                 )}
-                {user?.is_admin && (
+                {canManageRoute && (
                   <button
                     className="btn btn-danger"
                     onClick={handleDeleteRoute}

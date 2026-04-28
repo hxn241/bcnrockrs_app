@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import logo from '../assets/bcnrockers.png'
 import '../styles/Auth.css'
 
 export default function Register() {
@@ -8,6 +9,9 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
+  const [motoMarca, setMotoMarca] = useState('')
+  const [motoModelo, setMotoModelo] = useState('')
+  const [motoAnio, setMotoAnio] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -24,8 +28,23 @@ export default function Register() {
       return
     }
 
+    const mMarca = motoMarca.trim()
+    const mModelo = motoModelo.trim()
+    if (!mMarca || !mModelo) {
+      setError('Indica la marca y el modelo de la moto')
+      setLoading(false)
+      return
+    }
+
+    const anio = Number.parseInt(String(motoAnio).trim(), 10)
+    if (!Number.isFinite(anio) || anio < 1950 || anio > 2100) {
+      setError('Indica un año de la moto válido (1950–2100)')
+      setLoading(false)
+      return
+    }
+
     try {
-      await register(username, email, password, fullName)
+      await register(username, email, password, fullName, mMarca, mModelo, anio)
       navigate('/login')
     } catch (err) {
       setError(err.response?.data?.detail || 'Error en el registro')
@@ -37,8 +56,11 @@ export default function Register() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1>🏍️ BCN Rockers Routes</h1>
-        <h2>Crear Cuenta</h2>
+        <div className="auth-brand">
+          <img src={logo} alt="BCN ROCKRS" className="auth-logo" />
+          <p className="auth-tagline">Pasión por las dos ruedas</p>
+        </div>
+        <h2>Crear cuenta</h2>
 
         {error && <div className="error-message">{error}</div>}
 
@@ -69,6 +91,42 @@ export default function Register() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Marca de la moto</label>
+            <input
+              type="text"
+              value={motoMarca}
+              onChange={(e) => setMotoMarca(e.target.value)}
+              required
+              autoComplete="off"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Modelo</label>
+            <input
+              type="text"
+              value={motoModelo}
+              onChange={(e) => setMotoModelo(e.target.value)}
+              required
+              autoComplete="off"
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Año de la moto</label>
+            <input
+              type="number"
+              value={motoAnio}
+              onChange={(e) => setMotoAnio(e.target.value)}
+              min={1950}
+              max={2100}
+              required
+              autoComplete="off"
+              inputMode="numeric"
             />
           </div>
 

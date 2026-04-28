@@ -13,6 +13,9 @@ class User(Base):
     email = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     full_name = Column(String(100), nullable=True)
+    moto_marca = Column(String(100), nullable=True)
+    moto_modelo = Column(String(120), nullable=True)
+    moto_anio = Column(Integer, nullable=True)
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import logo from '../assets/bcnrockers.png'
 import '../styles/Auth.css'
 
 export default function Login() {
@@ -29,8 +30,11 @@ export default function Login() {
   return (
     <div className="auth-container">
       <div className="auth-box">
-        <h1>🏍️ BCN Rockers Routes</h1>
-        <h2>Iniciar Sesión</h2>
+        <div className="auth-brand">
+          <img src={logo} alt="BCN ROCKRS" className="auth-logo" />
+          <p className="auth-tagline">Pasión por las dos ruedas</p>
+        </div>
+        <h2>Iniciar sesión</h2>
 
         {error && <div className="error-message">{error}</div>}
 

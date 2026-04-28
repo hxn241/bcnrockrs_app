@@ -28,7 +28,6 @@ MANIFEST
 *.log
 local_settings.py
 db.sqlite3
-rutas_moto.db
 .env
 .env.local
 .env.*.local
@@ -70,6 +69,8 @@ Thumbs.db
 .dockerignore
 
 # Project specific
-*.db
 *.sqlite
 *.sqlite3
+
+# Keep BCN Rockers SQLite DB in git (never ignore)
+!backend/rutas_moto.db

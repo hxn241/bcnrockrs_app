@@ -4,8 +4,8 @@ from typing import List
 from datetime import datetime
 from app.database import get_db
 from app.models import User, RutaPublicada, Asistente
-from app.schemas import RutaPublicadaCreate, RutaPublicadaResponse
-from app.auth import get_current_user, get_admin_user
+from app.schemas import RutaPublicadaCreate, RutaPublicadaUpdate, RutaPublicadaResponse
+from app.auth import get_current_user
 
 router = APIRouter(prefix="/rutas-publicadas", tags=["rutas publicadas"])
 
@@ -99,22 +99,30 @@ def remove_attendee(
     db.commit()
     return {"message": "Removed from route"}
 
+def _can_edit_or_delete_published_route(route: RutaPublicada, current_user: User) -> bool:
+    return current_user.is_admin is True or current_user.id == route.organizador_id
+
 @router.put("/{ruta_publicada_id}", response_model=RutaPublicadaResponse)
 def update_published_route(
     ruta_publicada_id: int,
-    update_data: dict,
-    current_user: User = Depends(get_admin_user),
+    body: RutaPublicadaUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     route = db.query(RutaPublicada).filter(RutaPublicada.id == ruta_publicada_id).first()
     if not route:
         raise HTTPException(status_code=404, detail="Route not found")
 
-    # Solo permitir editar dia_ruta y hora_ruta
-    if "dia_ruta" in update_data:
-        route.dia_ruta = update_data["dia_ruta"]
-    if "hora_ruta" in update_data:
-        route.hora_ruta = update_data["hora_ruta"]
+    if not _can_edit_or_delete_published_route(route, current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el organizador o un administrador pueden editar la ruta",
+        )
+
+    data = body.model_dump(exclude_unset=True)
+    for key in ("dia_ruta", "hora_ruta", "link_encuentro_personalizado"):
+        if key in data:
+            setattr(route, key, data[key])
 
     db.commit()
     db.refresh(route)
@@ -123,12 +131,18 @@ def update_published_route(
 @router.delete("/{ruta_publicada_id}")
 def unpublish_route(
     ruta_publicada_id: int,
-    current_user: User = Depends(get_admin_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     route = db.query(RutaPublicada).filter(RutaPublicada.id == ruta_publicada_id).first()
     if not route:
         raise HTTPException(status_code=404, detail="Route not found")
+
+    if not _can_edit_or_delete_published_route(route, current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el organizador o un administrador pueden eliminar la ruta",
+        )
 
     # Delete all attendees
     db.query(Asistente).filter(Asistente.ruta_publicada_id == ruta_publicada_id).delete()

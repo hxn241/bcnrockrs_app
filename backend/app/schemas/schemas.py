@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
 from typing import Optional, List
 
@@ -8,6 +8,9 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     full_name: Optional[str] = None
+    moto_marca: Optional[str] = None
+    moto_modelo: Optional[str] = None
+    moto_anio: Optional[int] = Field(None, ge=1950, le=2100)
 
 class UserLogin(BaseModel):
     username: str
@@ -18,6 +21,9 @@ class UserResponse(BaseModel):
     username: str
     email: str
     full_name: Optional[str]
+    moto_marca: Optional[str] = None
+    moto_modelo: Optional[str] = None
+    moto_anio: Optional[int] = None
     is_admin: bool
     created_at: datetime
     
@@ -61,6 +67,12 @@ class RutaPublicadaCreate(BaseModel):
     hora_ruta: str
     link_encuentro_personalizado: Optional[str] = None
     link_restaurante_personalizado: Optional[str] = None
+
+class RutaPublicadaUpdate(BaseModel):
+    """Campos opcionales; null en link_encuentro_personalizado quita el enlace personalizado."""
+    dia_ruta: Optional[str] = None
+    hora_ruta: Optional[str] = None
+    link_encuentro_personalizado: Optional[str] = None
 
 class RutaPublicadaResponse(BaseModel):
     id: int

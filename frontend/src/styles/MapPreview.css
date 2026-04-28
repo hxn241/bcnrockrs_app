@@ -47,8 +47,8 @@
 }
 
 .map-placeholder {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--bcn-gradient-btn);
+  color: #fff;
   padding: 20px;
   border-radius: 8px;
   text-align: center;
@@ -60,14 +60,14 @@
 
 .map-link:hover .map-placeholder {
   transform: scale(1.05);
-  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 5px 15px rgba(196, 94, 46, 0.3);
 }
 
 .open-map-btn {
   display: block;
   text-align: center;
   padding: 8px;
-  color: #667eea;
+  color: var(--bcn-terracotta-deep);
   text-decoration: none;
   font-size: 12px;
   font-weight: bold;
@@ -75,5 +75,5 @@
 }
 
 .open-map-btn:hover {
-  color: #764ba2;
+  color: var(--bcn-terracotta);
 }
