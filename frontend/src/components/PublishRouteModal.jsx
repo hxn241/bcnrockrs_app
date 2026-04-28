@@ -186,10 +186,12 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
               ) : rutas.length === 0 ? (
                 <p className="no-routes">No hay rutas disponibles. Crea una nueva.</p>
               ) : (
-                <>
+                <div className="route-preview">
                   <div className="form-group">
-                    <label>Selecciona una Ruta *</label>
+                    <label htmlFor="publish-ruta-select">Selecciona una Ruta *</label>
                     <select
+                      id="publish-ruta-select"
+                      className="publish-modal-control"
                       value={selectedRutaId}
                       onChange={(e) => {
                         setSelectedRutaId(e.target.value)
@@ -207,7 +209,7 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
                   </div>
 
                   {selectedRuta && (
-                    <div className="route-preview">
+                    <>
                       <div className="map-section">
                         <GoogleMapEmbed
                           url={selectedRuta.link_ruta}
@@ -215,9 +217,11 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
                         />
                       </div>
 
-                      <div className="info-section">
-                        <h4>Punto de Encuentro</h4>
+                      <div className="form-group">
+                        <label htmlFor="publish-encuentro">Punto de Encuentro</label>
                         <input
+                          id="publish-encuentro"
+                          className="publish-modal-control"
                           type="url"
                           value={selectedEncuentro}
                           onChange={(e) => setSelectedEncuentro(e.target.value)}
@@ -225,9 +229,11 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
                         />
                       </div>
 
-                      <div className="info-section">
-                        <h4>Restaurante (Opcional)</h4>
+                      <div className="form-group">
+                        <label htmlFor="publish-restaurante">Restaurante (Opcional)</label>
                         <input
+                          id="publish-restaurante"
+                          className="publish-modal-control"
                           type="url"
                           value={selectedRestaurante}
                           onChange={(e) => setSelectedRestaurante(e.target.value)}
@@ -236,14 +242,16 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
                       </div>
 
                       <div className="form-group">
-                        <label>Hora de Salida *</label>
+                        <label htmlFor="publish-hora-salida">Hora de Salida *</label>
                         <input
+                          id="publish-hora-salida"
+                          className="publish-modal-control"
                           type="time"
                           value={hora}
                           onChange={(e) => setHora(e.target.value)}
                           min={minTime}
                         />
-                        {isToday && <p style={{fontSize: '12px', color: '#ff9800', marginTop: '4px'}}>⏰ Solo horas a partir de ahora ({minTime})</p>}
+                        {isToday && <p className="form-hint-time">⏰ Solo horas a partir de ahora ({minTime})</p>}
                       </div>
 
                       <button
@@ -252,16 +260,18 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
                       >
                         Publicar Ruta
                       </button>
-                    </div>
+                    </>
                   )}
-                </>
+                </div>
               )}
             </>
           ) : (
-            <>
+            <div className="route-preview">
               <div className="form-group">
-                <label>Nombre de la Ruta *</label>
+                <label htmlFor="create-ruta-nombre">Nombre de la Ruta *</label>
                 <input
+                  id="create-ruta-nombre"
+                  className="publish-modal-control"
                   type="text"
                   value={newRuta.nombre}
                   onChange={(e) => setNewRuta({...newRuta, nombre: e.target.value})}
@@ -270,8 +280,10 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
               </div>
 
               <div className="form-group">
-                <label>Link de la Ruta (Google Maps) *</label>
+                <label htmlFor="create-ruta-link">Link de la Ruta (Google Maps) *</label>
                 <input
+                  id="create-ruta-link"
+                  className="publish-modal-control"
                   type="url"
                   value={newRuta.link_ruta}
                   onChange={(e) => setNewRuta({...newRuta, link_ruta: e.target.value})}
@@ -280,8 +292,10 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
               </div>
 
               <div className="form-group">
-                <label>Punto de Encuentro (Link) *</label>
+                <label htmlFor="create-ruta-encuentro">Punto de Encuentro (Link) *</label>
                 <input
+                  id="create-ruta-encuentro"
+                  className="publish-modal-control"
                   type="url"
                   value={newRuta.link_encuentro}
                   onChange={(e) => setNewRuta({...newRuta, link_encuentro: e.target.value})}
@@ -290,8 +304,10 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
               </div>
 
               <div className="form-group">
-                <label>Restaurante (Link Opcional)</label>
+                <label htmlFor="create-ruta-restaurante">Restaurante (Link Opcional)</label>
                 <input
+                  id="create-ruta-restaurante"
+                  className="publish-modal-control"
                   type="url"
                   value={newRuta.link_restaurante}
                   onChange={(e) => setNewRuta({...newRuta, link_restaurante: e.target.value})}
@@ -300,14 +316,16 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
               </div>
 
               <div className="form-group">
-                <label>Hora de Salida *</label>
+                <label htmlFor="create-ruta-hora">Hora de Salida *</label>
                 <input
+                  id="create-ruta-hora"
+                  className="publish-modal-control"
                   type="time"
                   value={hora}
                   onChange={(e) => setHora(e.target.value)}
                   min={minTime}
                 />
-                {isToday && <p style={{fontSize: '12px', color: '#ff9800', marginTop: '4px'}}>⏰ Solo horas a partir de ahora ({minTime})</p>}
+                {isToday && <p className="form-hint-time">⏰ Solo horas a partir de ahora ({minTime})</p>}
               </div>
 
               <button
@@ -316,7 +334,7 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
               >
                 Crear y Publicar Ruta
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>

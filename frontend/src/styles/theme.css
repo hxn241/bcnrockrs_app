@@ -1,0 +1,19 @@
+/* Paleta alineada con el logo BCN ROCKRS: carbón, crema, terracota */
+:root {
+  --bcn-charcoal: #2a2420;
+  --bcn-charcoal-soft: #3d332c;
+  --bcn-cream: #ebe2d4;
+  --bcn-cream-pale: #f7f1e8;
+  --bcn-cream-warm: #fffcf7;
+  --bcn-terracotta: #c45e2e;
+  --bcn-terracotta-bright: #d97b3c;
+  --bcn-terracotta-deep: #9e4a1f;
+  --bcn-terracotta-mid: #b86b2a;
+  --bcn-text: #1c1814;
+  --bcn-text-muted: #5c5248;
+  --bcn-border: #e0d5c8;
+  --bcn-gradient-btn: linear-gradient(135deg, #d97b3c 0%, #b85a28 100%);
+  --bcn-gradient-btn-hover: linear-gradient(135deg, #c97833 0%, #9e4a1f 100%);
+  --bcn-shadow: 0 4px 24px rgba(42, 36, 32, 0.1);
+  --bcn-glow-terracotta: 0 6px 20px rgba(196, 94, 46, 0.35);
+}

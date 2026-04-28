@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { getApiBaseUrl } from '../utils/apiBaseUrl'
 import '../styles/GoogleMapEmbed.css'
 
 export default function GoogleMapEmbed({ url, title }) {
@@ -15,7 +16,7 @@ export default function GoogleMapEmbed({ url, title }) {
     const getEmbedUrl = async () => {
       try {
         const encodedUrl = encodeURIComponent(url)
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+        const apiUrl = getApiBaseUrl()
         const response = await fetch(
           `${apiUrl}/maps/embed/${encodedUrl}`
         )

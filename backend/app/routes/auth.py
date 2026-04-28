@@ -32,6 +32,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         hashed_password=hashed_password,
         full_name=user.full_name,
+        moto_marca=(user.moto_marca.strip() if user.moto_marca else None) or None,
+        moto_modelo=(user.moto_modelo.strip() if user.moto_modelo else None) or None,
+        moto_anio=user.moto_anio,
         is_admin=is_admin
     )
 

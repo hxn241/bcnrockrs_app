@@ -79,7 +79,11 @@ export default function Dashboard() {
       <Navigation user={user} onLogout={handleLogout} />
 
       <div className="container">
-        <h1>🏍️ Rutas Disponibles</h1>
+        <header className="dashboard-heading">
+          <h1 className="dashboard-heading-title">Rutas disponibles</h1>
+          <div className="dashboard-heading-line" aria-hidden="true" />
+          <p className="dashboard-heading-sub">Próximas salidas publicadas en el calendario</p>
+        </header>
 
         {error && <div className="error-message">{error}</div>}
 

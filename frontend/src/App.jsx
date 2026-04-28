@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Calendar from './pages/Calendar'
+import CatalogoRutas from './pages/CatalogoRutas'
 import './styles/App.css'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
 
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/calendario" element={<PrivateRoute><Calendar /></PrivateRoute>} />
+          <Route path="/catalogo" element={<PrivateRoute><CatalogoRutas /></PrivateRoute>} />
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>

@@ -1,9 +1,8 @@
 import axios from 'axios'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import { getApiBaseUrl } from '../utils/apiBaseUrl'
 
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json'
   }
@@ -19,8 +18,16 @@ api.interceptors.request.use((config) => {
 })
 
 export const authService = {
-  register: (username, email, password, fullName) =>
-    api.post('/auth/register', { username, email, password, full_name: fullName }),
+  register: (username, email, password, fullName, motoMarca, motoModelo, motoAnio) =>
+    api.post('/auth/register', {
+      username,
+      email,
+      password,
+      full_name: fullName,
+      moto_marca: motoMarca || null,
+      moto_modelo: motoModelo || null,
+      moto_anio: motoAnio ?? null
+    }),
 
   login: (username, password) =>
     api.post('/auth/login', { username, password })

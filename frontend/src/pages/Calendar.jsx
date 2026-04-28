@@ -5,6 +5,7 @@ import { rutasPublicadasService } from '../services/api'
 import Navigation from '../components/Navigation'
 import PublishRouteModal from '../components/PublishRouteModal'
 import RouteDetailModal from '../components/RouteDetailModal'
+import '../styles/Dashboard.css'
 import '../styles/Calendar.css'
 
 export default function Calendar() {
@@ -112,12 +113,15 @@ export default function Calendar() {
   const firstDay = getFirstDayOfMonth(currentDate)
 
   return (
-    <div className="calendar-page">
+    <div className="dashboard">
       <Navigation user={user} onLogout={handleLogout} />
 
-      <div className="calendar-container">
-        <h1>📅 Calendario de Rutas</h1>
-        <p className="calendar-help">Haz clic en cualquier día para crear o seleccionar una ruta</p>
+      <div className="container">
+        <header className="dashboard-heading">
+          <h1 className="dashboard-heading-title">Calendario de rutas</h1>
+          <div className="dashboard-heading-line" aria-hidden="true" />
+          <p className="dashboard-heading-sub">Haz clic en un día para publicar o ver una salida</p>
+        </header>
 
         {error && <div className="error-message">{error}</div>}
 

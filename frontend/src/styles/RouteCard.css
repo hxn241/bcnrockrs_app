@@ -1,8 +1,9 @@
 .route-card {
-  background: white;
+  background: var(--bcn-cream-warm);
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(42, 36, 32, 0.08);
+  border: 1px solid var(--bcn-border);
   cursor: pointer;
   transition: box-shadow 0.2s;
 }
@@ -12,13 +13,13 @@
 }
 
 .route-card h3 {
-  color: #333;
+  color: var(--bcn-text);
   margin: 0 0 10px 0;
   font-size: 16px;
 }
 
 .route-card p {
-  color: #666;
+  color: var(--bcn-text-muted);
   margin: 5px 0;
   font-size: 13px;
 }

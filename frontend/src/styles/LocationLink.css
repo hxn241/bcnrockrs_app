@@ -1,0 +1,33 @@
+/* Mismo cuerpo que .route-info-section p: el strong lleva el emoji+etiqueta como Fecha / Hora */
+.location-link-inline-anchor {
+  color: #1a5fb4;
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  border-bottom: none;
+  transition: color 0.2s;
+}
+
+.location-link-inline-anchor:hover {
+  color: #0d47a1;
+}
+
+.location-link-missing {
+  color: #999;
+  font-style: italic;
+}
+
+.location-link-block {
+  display: block;
+  padding: 0;
+  margin-bottom: 12px;
+  color: var(--bcn-terracotta-bright);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+
+.location-link-block:hover {
+  color: var(--bcn-terracotta);
+}

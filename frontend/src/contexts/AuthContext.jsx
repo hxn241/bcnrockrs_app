@@ -17,10 +17,18 @@ export const AuthProvider = ({ children }) => {
     setLoading(false)
   }, [])
 
-  const register = async (username, email, password, fullName) => {
+  const register = async (username, email, password, fullName, motoMarca, motoModelo, motoAnio) => {
     try {
       setError(null)
-      const response = await authService.register(username, email, password, fullName)
+      const response = await authService.register(
+        username,
+        email,
+        password,
+        fullName,
+        motoMarca,
+        motoModelo,
+        motoAnio
+      )
       return response.data
     } catch (err) {
       setError(err.response?.data?.detail || 'Error en registro')
