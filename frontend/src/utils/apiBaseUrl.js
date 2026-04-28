@@ -19,7 +19,10 @@ export function getApiBaseUrl() {
 
   try {
     const parsed = new URL(base)
-    return `${parsed.protocol}//${hostname}${parsed.port ? `:${parsed.port}` : ''}`
+    // Misma capa que la página (http/https). Si el front es https://dominio:3000 y el API
+    // se arma con protocolo de localhost (http), el navegador bloquea por mixed content.
+    const protocol = window.location.protocol || parsed.protocol
+    return `${protocol}//${hostname}${parsed.port ? `:${parsed.port}` : ''}`
   } catch {
     return base
   }
