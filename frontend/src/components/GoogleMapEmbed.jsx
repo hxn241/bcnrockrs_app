@@ -9,32 +9,55 @@ export default function GoogleMapEmbed({ url, title }) {
 
   useEffect(() => {
     if (!url) {
+      setEmbedUrl(null)
+      setError(null)
       setLoading(false)
       return
     }
 
-    const getEmbedUrl = async () => {
+    const ac = new AbortController()
+    setLoading(true)
+    setError(null)
+    setEmbedUrl(null)
+
+    const run = async () => {
       try {
         const encodedUrl = encodeURIComponent(url)
         const apiUrl = getApiBaseUrl()
-        const response = await fetch(
-          `${apiUrl}/maps/embed/${encodedUrl}`
-        )
-        const data = await response.json()
+        const response = await fetch(`${apiUrl}/maps/embed/${encodedUrl}`, {
+          signal: ac.signal,
+        })
+        const data = await response.json().catch(() => ({}))
+        if (ac.signal.aborted) return
+        if (!response.ok) {
+          const detail = data.detail
+          setError(
+            typeof detail === 'string'
+              ? detail
+              : Array.isArray(detail)
+                ? detail.map((d) => d.msg || d).join(' ')
+                : 'No se pudo generar el mapa del recorrido'
+          )
+          return
+        }
         if (data.embed_url) {
           setEmbedUrl(data.embed_url)
         } else {
           setError('No se pudo obtener la URL del mapa')
         }
       } catch (err) {
+        if (err.name === 'AbortError') return
         console.error('Error al obtener mapa:', err)
         setError('Error al cargar el mapa')
       } finally {
-        setLoading(false)
+        if (!ac.signal.aborted) {
+          setLoading(false)
+        }
       }
     }
 
-    getEmbedUrl()
+    run()
+    return () => ac.abort()
   }, [url])
 
   if (!url) {

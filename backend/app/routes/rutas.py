@@ -37,7 +37,7 @@ def create_route(
 def update_route(
     ruta_id: int,
     ruta_update: RutaUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_admin_user),
     db: Session = Depends(get_db)
 ):
     route = db.query(Ruta).filter(Ruta.id == ruta_id).first()

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { rutasService } from '../services/api'
 import Navigation from '../components/Navigation'
+import EditRouteModal from '../components/EditRouteModal'
 import '../styles/Dashboard.css'
 import '../styles/CatalogoRutas.css'
 
@@ -26,6 +27,7 @@ export default function CatalogoRutas() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deletingId, setDeletingId] = useState(null)
+  const [editingRuta, setEditingRuta] = useState(null)
 
   useEffect(() => {
     if (user && !user.is_admin) {
@@ -86,10 +88,11 @@ export default function CatalogoRutas() {
           <p className="dashboard-heading-sub">Rutas en base de datos — solo administradores</p>
         </header>
         <p className="catalogo-rutas-sub">
-          Rutas guardadas en la base de datos. Solo los administradores ven esta pestaña. No se puede
+          Rutas guardadas en la base de datos. Solo los administradores ven esta pestaña.           Puedes
+          editar el nombre de la ruta y todos los enlaces (recorrido Maps, encuentro, restaurante)
+          con «Editar». No se puede
           eliminar una ruta si aún tiene salidas activas en el calendario: hay que despublicarlas o
-          borrarlas antes. Si no hay salidas activas, la eliminación quita el registro del catálogo en
-          la base de datos.
+          borrarlas antes.
         </p>
 
         {error && <div className="error-message">{error}</div>}
@@ -106,7 +109,7 @@ export default function CatalogoRutas() {
                   <th>ID</th>
                   <th>Nombre</th>
                   <th>Enlace ruta</th>
-                  <th className="catalogo-rutas-col-action" />
+                  <th className="catalogo-rutas-col-action">Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -124,7 +127,14 @@ export default function CatalogoRutas() {
                         Abrir
                       </a>
                     </td>
-                    <td>
+                    <td className="catalogo-rutas-actions-cell">
+                      <button
+                        type="button"
+                        className="btn catalogo-rutas-btn-edit"
+                        onClick={() => setEditingRuta(r)}
+                      >
+                        Editar
+                      </button>
                       <button
                         type="button"
                         className="btn catalogo-rutas-btn-delete"
@@ -141,6 +151,15 @@ export default function CatalogoRutas() {
           </div>
         )}
       </div>
+
+      {editingRuta && (
+        <EditRouteModal
+          ruta={editingRuta}
+          mode="edit"
+          onClose={() => setEditingRuta(null)}
+          onSave={loadRutas}
+        />
+      )}
     </div>
   )
 }

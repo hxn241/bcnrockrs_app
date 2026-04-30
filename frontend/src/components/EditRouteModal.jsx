@@ -1,33 +1,49 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { rutasService } from '../services/api'
+import GoogleMapsLinkInfo from './GoogleMapsLinkInfo'
 import '../styles/PublishRouteModal.css'
 
-export default function EditRouteModal({ ruta, mode, onClose, onSave }) {
-  const [form, setForm] = useState({
+function buildForm(ruta, mode) {
+  return {
     nombre: mode === 'duplicate' ? `Copia de ${ruta.nombre}` : ruta.nombre,
     link_ruta: ruta.link_ruta || '',
     link_encuentro: ruta.link_encuentro || '',
     link_restaurante: ruta.link_restaurante || ''
-  })
+  }
+}
+
+export default function EditRouteModal({ ruta, mode, onClose, onSave }) {
+  const [form, setForm] = useState(() => buildForm(ruta, mode))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    setForm(buildForm(ruta, mode))
+    setError('')
+  }, [ruta.id, mode, ruta.nombre, ruta.link_ruta, ruta.link_encuentro, ruta.link_restaurante])
 
   const handleChange = (field) => (e) => {
     setForm({ ...form, [field]: e.target.value })
   }
 
   const handleSubmit = async () => {
-    if (!form.nombre || !form.link_ruta || !form.link_encuentro) {
-      setError('Nombre, link de ruta y punto de encuentro son obligatorios')
+    if (!form.nombre?.trim() || !form.link_ruta?.trim() || !form.link_encuentro?.trim()) {
+      setError('Nombre de la ruta, enlace del recorrido y punto de encuentro son obligatorios')
       return
     }
 
     try {
       setLoading(true)
+      const payload = {
+        nombre: form.nombre.trim(),
+        link_ruta: form.link_ruta.trim(),
+        link_encuentro: form.link_encuentro.trim(),
+        link_restaurante: form.link_restaurante.trim() || null
+      }
       if (mode === 'edit') {
-        await rutasService.updateRoute(ruta.id, form)
+        await rutasService.updateRoute(ruta.id, payload)
       } else {
-        await rutasService.createRoute(form)
+        await rutasService.createRoute(payload)
       }
       onSave()
       onClose()
@@ -52,17 +68,27 @@ export default function EditRouteModal({ ruta, mode, onClose, onSave }) {
 
         <div className="mode-content">
           <div className="form-group">
-            <label>Nombre *</label>
+            <label htmlFor="edit-ruta-nombre">Nombre de la ruta *</label>
             <input
+              id="edit-ruta-nombre"
               type="text"
               value={form.nombre}
               onChange={handleChange('nombre')}
+              placeholder="Ej. Gavà - Begues - Subirats…"
+              autoComplete="off"
             />
+            <p className="form-hint-edit-ruta">
+              Es el título que verán en el calendario y en las rutas publicadas.
+            </p>
           </div>
 
           <div className="form-group">
-            <label>Link de la Ruta (Google Maps) *</label>
+            <div className="form-label-with-gmaps-info">
+              <label htmlFor="edit-ruta-link">Enlace del recorrido (Google Maps) *</label>
+              <GoogleMapsLinkInfo />
+            </div>
             <input
+              id="edit-ruta-link"
               type="url"
               value={form.link_ruta}
               onChange={handleChange('link_ruta')}
@@ -71,8 +97,12 @@ export default function EditRouteModal({ ruta, mode, onClose, onSave }) {
           </div>
 
           <div className="form-group">
-            <label>Punto de Encuentro (Link) *</label>
+            <div className="form-label-with-gmaps-info">
+              <label htmlFor="edit-ruta-encuentro">Punto de encuentro (enlace) *</label>
+              <GoogleMapsLinkInfo />
+            </div>
             <input
+              id="edit-ruta-encuentro"
               type="url"
               value={form.link_encuentro}
               onChange={handleChange('link_encuentro')}
@@ -81,8 +111,12 @@ export default function EditRouteModal({ ruta, mode, onClose, onSave }) {
           </div>
 
           <div className="form-group">
-            <label>Restaurante (Link Opcional)</label>
+            <div className="form-label-with-gmaps-info">
+              <label htmlFor="edit-ruta-rest">Restaurante (enlace opcional)</label>
+              <GoogleMapsLinkInfo />
+            </div>
             <input
+              id="edit-ruta-rest"
               type="url"
               value={form.link_restaurante}
               onChange={handleChange('link_restaurante')}

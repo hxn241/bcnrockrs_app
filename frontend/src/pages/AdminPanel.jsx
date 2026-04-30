@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { rutasService, rutasPublicadasService } from '../services/api'
 import Navigation from '../components/Navigation'
+import GoogleMapsLinkInfo from '../components/GoogleMapsLinkInfo'
 import '../styles/AdminPanel.css'
 
 export default function AdminPanel() {
@@ -149,31 +150,46 @@ export default function AdminPanel() {
               </div>
 
               <div className="form-group">
-                <label>Link de la Ruta (Google Maps, etc) *</label>
+                <div className="form-label-with-gmaps-info">
+                  <label htmlFor="admin-new-link-ruta">Link de la Ruta (Google Maps, etc) *</label>
+                  <GoogleMapsLinkInfo />
+                </div>
                 <input
+                  id="admin-new-link-ruta"
                   type="url"
                   value={newRuta.link_ruta}
                   onChange={(e) => setNewRuta({...newRuta, link_ruta: e.target.value})}
+                  placeholder="https://maps.app.goo.gl/..."
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label>Punto de Encuentro (Link) *</label>
+                <div className="form-label-with-gmaps-info">
+                  <label htmlFor="admin-new-link-encuentro">Punto de Encuentro (Link) *</label>
+                  <GoogleMapsLinkInfo />
+                </div>
                 <input
+                  id="admin-new-link-encuentro"
                   type="url"
                   value={newRuta.link_encuentro}
                   onChange={(e) => setNewRuta({...newRuta, link_encuentro: e.target.value})}
+                  placeholder="https://maps.app.goo.gl/..."
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label>Restaurante (Link)</label>
+                <div className="form-label-with-gmaps-info">
+                  <label htmlFor="admin-new-link-restaurante">Restaurante (Link)</label>
+                  <GoogleMapsLinkInfo />
+                </div>
                 <input
+                  id="admin-new-link-restaurante"
                   type="url"
                   value={newRuta.link_restaurante}
                   onChange={(e) => setNewRuta({...newRuta, link_restaurante: e.target.value})}
+                  placeholder="https://maps.app.goo.gl/..."
                 />
               </div>
 

@@ -57,8 +57,10 @@ export default function Calendar() {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
   }
 
+  /** Lunes = 0 … Domingo = 6 (coincide con la fila Lun–Dom del calendario) */
   const getFirstDayOfMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+    const sundayBased = new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+    return (sundayBased + 6) % 7
   }
 
   const previousMonth = () => {

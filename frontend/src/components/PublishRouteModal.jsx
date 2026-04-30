@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { rutasService, rutasPublicadasService } from '../services/api'
 import GoogleMapEmbed from './GoogleMapEmbed'
+import GoogleMapsLinkInfo from './GoogleMapsLinkInfo'
 import '../styles/PublishRouteModal.css'
 
 export default function PublishRouteModal({ date, onClose, onPublish }) {
@@ -218,26 +219,32 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="publish-encuentro">Punto de Encuentro</label>
+                        <div className="form-label-with-gmaps-info">
+                          <label htmlFor="publish-encuentro">Punto de Encuentro</label>
+                          <GoogleMapsLinkInfo />
+                        </div>
                         <input
                           id="publish-encuentro"
                           className="publish-modal-control"
                           type="url"
                           value={selectedEncuentro}
                           onChange={(e) => setSelectedEncuentro(e.target.value)}
-                          placeholder="https://maps.google.com/..."
+                          placeholder="https://maps.app.goo.gl/..."
                         />
                       </div>
 
                       <div className="form-group">
-                        <label htmlFor="publish-restaurante">Restaurante (Opcional)</label>
+                        <div className="form-label-with-gmaps-info">
+                          <label htmlFor="publish-restaurante">Restaurante (Opcional)</label>
+                          <GoogleMapsLinkInfo />
+                        </div>
                         <input
                           id="publish-restaurante"
                           className="publish-modal-control"
                           type="url"
                           value={selectedRestaurante}
                           onChange={(e) => setSelectedRestaurante(e.target.value)}
-                          placeholder="https://maps.google.com/..."
+                          placeholder="https://maps.app.goo.gl/..."
                         />
                       </div>
 
@@ -280,38 +287,47 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
               </div>
 
               <div className="form-group">
-                <label htmlFor="create-ruta-link">Link de la Ruta (Google Maps) *</label>
+                <div className="form-label-with-gmaps-info">
+                  <label htmlFor="create-ruta-link">Link de la Ruta (Google Maps) *</label>
+                  <GoogleMapsLinkInfo />
+                </div>
                 <input
                   id="create-ruta-link"
                   className="publish-modal-control"
                   type="url"
                   value={newRuta.link_ruta}
                   onChange={(e) => setNewRuta({...newRuta, link_ruta: e.target.value})}
-                  placeholder="https://maps.google.com/..."
+                  placeholder="https://maps.app.goo.gl/..."
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="create-ruta-encuentro">Punto de Encuentro (Link) *</label>
+                <div className="form-label-with-gmaps-info">
+                  <label htmlFor="create-ruta-encuentro">Punto de Encuentro (Link) *</label>
+                  <GoogleMapsLinkInfo />
+                </div>
                 <input
                   id="create-ruta-encuentro"
                   className="publish-modal-control"
                   type="url"
                   value={newRuta.link_encuentro}
                   onChange={(e) => setNewRuta({...newRuta, link_encuentro: e.target.value})}
-                  placeholder="https://maps.google.com/..."
+                  placeholder="https://maps.app.goo.gl/..."
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="create-ruta-restaurante">Restaurante (Link Opcional)</label>
+                <div className="form-label-with-gmaps-info">
+                  <label htmlFor="create-ruta-restaurante">Restaurante (Link Opcional)</label>
+                  <GoogleMapsLinkInfo />
+                </div>
                 <input
                   id="create-ruta-restaurante"
                   className="publish-modal-control"
                   type="url"
                   value={newRuta.link_restaurante}
                   onChange={(e) => setNewRuta({...newRuta, link_restaurante: e.target.value})}
-                  placeholder="https://maps.google.com/..."
+                  placeholder="https://maps.app.goo.gl/..."
                 />
               </div>
 

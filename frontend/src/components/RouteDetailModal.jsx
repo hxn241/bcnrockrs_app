@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { rutasPublicadasService } from '../services/api'
 import MapPreview from './MapPreview'
 import LocationLink from './LocationLink'
+import GoogleMapsLinkInfo from './GoogleMapsLinkInfo'
 import '../styles/RouteDetailModal.css'
 
 export default function RouteDetailModal({ route, user, onClose, onRefresh }) {
@@ -168,7 +169,10 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="edit-encuentro">Punto de encuentro (enlace Google Maps):</label>
+                <div className="form-label-with-gmaps-info">
+                  <label htmlFor="edit-encuentro">Punto de encuentro (enlace Google Maps):</label>
+                  <GoogleMapsLinkInfo />
+                </div>
                 <input
                   id="edit-encuentro"
                   type="url"

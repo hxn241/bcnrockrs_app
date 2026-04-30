@@ -6,6 +6,10 @@
   padding: 30px;
   box-shadow: var(--bcn-shadow);
   border: 1px solid var(--bcn-border);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .calendar-header {
@@ -13,17 +17,21 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 35px;
-  gap: 20px;
+  gap: 12px;
+  min-width: 0;
 }
 
 .calendar-header h2 {
   color: var(--bcn-text);
-  font-size: 28px;
+  font-size: clamp(1rem, 4.2vw, 28px);
   margin: 0;
   flex: 1;
+  min-width: 0;
   text-align: center;
   font-weight: 700;
   letter-spacing: 0.3px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .calendar-header button {
@@ -32,6 +40,7 @@
   border: none;
   width: 48px;
   height: 48px;
+  flex-shrink: 0;
   border-radius: 8px;
   cursor: pointer;
   font-size: 20px;
@@ -60,7 +69,7 @@
 
 .weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 15px;
   font-weight: 700;
@@ -68,13 +77,23 @@
   text-align: center;
   font-size: 14px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.06em;
+  min-width: 0;
+  width: 100%;
+}
+
+.weekdays > div {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .days {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 12px;
+  min-width: 0;
+  width: 100%;
 }
 
 .day {
@@ -88,7 +107,9 @@
   cursor: pointer;
   border: 2px solid #e8e8e8;
   transition: all 0.3s ease;
-  min-height: 85px;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
   position: relative;
   font-weight: 600;
 }
@@ -138,9 +159,10 @@
 }
 
 .day-number {
-  font-size: 20px;
+  font-size: clamp(14px, 3.8vw, 20px);
   font-weight: 700;
   color: #333;
+  line-height: 1;
 }
 
 .day:hover:not(.empty):not(.past-day) .day-number {
@@ -153,10 +175,12 @@
 
 .day-routes {
   display: flex;
-  gap: 5px;
-  margin-top: 5px;
+  gap: 2px;
+  margin-top: 4px;
   flex-wrap: wrap;
   justify-content: center;
+  max-width: 100%;
+  padding: 0 2px;
 }
 
 .route-symbol {
@@ -189,11 +213,13 @@
 
 @media (max-width: 768px) {
   .calendar {
-    padding: 20px;
+    padding: 16px;
+    border-radius: 10px;
   }
 
-  .calendar-header h2 {
-    font-size: 22px;
+  .calendar-header {
+    margin-bottom: 22px;
+    gap: 8px;
   }
 
   .calendar-header button {
@@ -203,24 +229,45 @@
   }
 
   .weekdays {
-    font-size: 12px;
-    gap: 8px;
+    font-size: 11px;
+    gap: 6px;
     margin-bottom: 10px;
+    letter-spacing: 0.04em;
   }
 
   .days {
-    gap: 8px;
+    gap: 6px;
   }
 
   .day {
-    min-height: 70px;
-  }
-
-  .day-number {
-    font-size: 16px;
+    border-radius: 8px;
+    border-width: 1px;
   }
 
   .route-symbol {
-    font-size: 16px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 420px) {
+  .calendar {
+    padding: 12px;
+  }
+
+  .calendar-header {
+    margin-bottom: 18px;
+  }
+
+  .weekdays {
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .days {
+    gap: 4px;
+  }
+
+  .route-symbol {
+    font-size: 12px;
   }
 }
