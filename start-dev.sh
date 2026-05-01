@@ -3,10 +3,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND="$ROOT/backend"
-FRONTEND="$ROOT/frontend"
-
 backend_cmd="cd $(printf '%q' "$BACKEND") && source venv/bin/activate && python -m uvicorn app.main:app --reload --port 8002 --host 0.0.0.0"
-frontend_cmd="cd $(printf '%q' "$FRONTEND") && npm run dev"
+# Monorepo: instalar desde la raíz (`npm install`) para enlazar `packages/shared`; el script `dev` delega al workspace frontend.
+frontend_cmd="cd $(printf '%q' "$ROOT") && npm run dev"
 
 # Lanza el proceso desacoplado: muchos emuladores bloquean hasta cerrar la ventana si no van en background.
 detach() {
