@@ -1,3 +1,13 @@
+/** Query opcional para listados con filtros por zona (pais=ES, region, ciudad). */
+function listadoSalidasConfig(filters) {
+  if (!filters || typeof filters !== 'object') return undefined
+  const params = {}
+  for (const [k, v] of Object.entries(filters)) {
+    if (v != null && String(v).trim() !== '') params[k] = String(v).trim()
+  }
+  return Object.keys(params).length ? { params } : undefined
+}
+
 /**
  * Servicios de API reutilizables. Reciben la instancia axios creada con createApiClient.
  */
@@ -14,21 +24,28 @@ export function createServices(api) {
         moto_anio: motoAnio ?? null
       }),
 
-    login: (username, password) => api.post('/auth/login', { username, password })
+    login: (username, password) => api.post('/auth/login', { username, password }),
+
+    getMe: () => api.get('/auth/me'),
+
+    updateMe: (body) => api.patch('/auth/me', body)
   }
 
   const rutasService = {
     getAllRoutes: () => api.get('/rutas'),
-    getRoutesForPublish: () => api.get('/rutas/para-publicar'),
-    getRoute: (id) => api.get(`/rutas/${id}`),
+    getRoutesForPublish: (filters) =>
+      api.get('/rutas/para-publicar', listadoSalidasConfig(filters)),
     createRoute: (ruta) => api.post('/rutas', ruta),
     updateRoute: (id, ruta) => api.put(`/rutas/${id}`, ruta),
-    deleteRoute: (id) => api.delete(`/rutas/${id}`)
+    deleteRoute: (id) => api.delete(`/rutas/${id}`),
+    marcarEliminacionCatalogo: (id) => api.post(`/rutas/${id}/marcar-eliminacion`),
+    desmarcarEliminacionCatalogo: (id) => api.delete(`/rutas/${id}/marcar-eliminacion`)
   }
 
   const rutasPublicadasService = {
-    getPublishedRoutes: () => api.get('/rutas-publicadas'),
-    getHistoricoRoutes: () => api.get('/rutas-publicadas/historico'),
+    getPublishedRoutes: (filters) => api.get('/rutas-publicadas', listadoSalidasConfig(filters)),
+    getHistoricoRoutes: (filters) =>
+      api.get('/rutas-publicadas/historico', listadoSalidasConfig(filters)),
     getRoutesByDate: (fecha) => api.get(`/rutas-publicadas/calendario/${fecha}`),
     publishRoute: (ruta) => api.post('/rutas-publicadas', ruta),
     addAttendee: (rutaId) => api.post(`/rutas-publicadas/${rutaId}/asistentes`),
@@ -45,5 +62,29 @@ export function createServices(api) {
       api.delete(`/rutas-publicadas/${rutaId}/fotos/${fotoId}`)
   }
 
-  return { authService, rutasService, rutasPublicadasService }
+  const gruposService = {
+    listar: () => api.get('/grupos'),
+    misGrupos: () => api.get('/grupos/mios'),
+    misSolicitudesPendientesIds: () => api.get('/grupos/solicitudes-pendientes/mias'),
+    crear: (body) => api.post('/grupos', body),
+    detalle: (grupoId) => api.get(`/grupos/${grupoId}/detalle`),
+    solicitar: (grupoId) => api.post(`/grupos/${grupoId}/solicitar`),
+    cancelarSolicitud: (grupoId) => api.delete(`/grupos/${grupoId}/solicitar`),
+    aceptarSolicitud: (grupoId, userId) =>
+      api.post(`/grupos/${grupoId}/solicitudes/${userId}/aceptar`),
+    rechazarSolicitud: (grupoId, userId) =>
+      api.post(`/grupos/${grupoId}/solicitudes/${userId}/rechazar`),
+    salir: (grupoId) => api.delete(`/grupos/${grupoId}/salir`),
+    expulsarMiembro: (grupoId, userId) =>
+      api.delete(`/grupos/${grupoId}/miembros/${userId}`),
+    eliminar: (grupoId) => api.delete(`/grupos/${grupoId}`),
+    uploadLogo: (grupoId, file) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return api.post(`/grupos/${grupoId}/logo`, fd)
+    },
+    deleteLogo: (grupoId) => api.delete(`/grupos/${grupoId}/logo`)
+  }
+
+  return { authService, rutasService, rutasPublicadasService, gruposService }
 }

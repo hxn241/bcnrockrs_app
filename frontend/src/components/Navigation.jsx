@@ -1,8 +1,13 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import logo from '../assets/bcnrockers.png'
+import UserProfileModal from './UserProfileModal'
 import '../styles/Navigation.css'
 
 export default function Navigation({ user, onLogout }) {
+  const [profileOpen, setProfileOpen] = useState(false)
+  const displayName = user?.full_name?.trim() || user?.username || 'Usuario'
+
   return (
     <nav className="navigation">
       <div className="nav-container">
@@ -31,13 +36,21 @@ export default function Navigation({ user, onLogout }) {
           <li>
             <Link to="/historico">Histórico</Link>
           </li>
-          {user?.is_admin && (
-            <li>
-              <Link to="/catalogo">Catálogo de rutas</Link>
-            </li>
-          )}
+          <li>
+            <Link to="/grupos">Grupos</Link>
+          </li>
+          <li>
+            <Link to="/catalogo">Catálogo de rutas</Link>
+          </li>
           <li className="user-info">
-            <span>{user?.username}</span>
+            <button
+              type="button"
+              className="nav-user-btn"
+              onClick={() => setProfileOpen(true)}
+              title="Editar nombre y datos de la moto"
+            >
+              {displayName}
+            </button>
           </li>
           <li>
             <button className="logout-btn" onClick={onLogout}>
@@ -46,6 +59,7 @@ export default function Navigation({ user, onLogout }) {
           </li>
         </ul>
       </div>
+      <UserProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </nav>
   )
 }

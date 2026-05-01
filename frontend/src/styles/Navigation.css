@@ -127,9 +127,27 @@
   font-size: 14px;
 }
 
-.user-info span {
-  font-weight: 600;
+.nav-user-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--bcn-cream-warm);
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.nav-user-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: var(--bcn-terracotta-bright);
+  color: #fff;
 }
 
 .admin-badge {

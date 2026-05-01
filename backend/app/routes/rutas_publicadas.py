@@ -3,15 +3,17 @@ from __future__ import annotations
 import shutil
 from datetime import date
 from pathlib import Path
+from typing import Optional
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import Session, joinedload
 
-from app.auth import get_current_user
+from app.auth import get_current_user, get_current_user_optional
 from app.config import settings
 from app.database import get_db
-from app.models import User, RutaPublicada, Asistente, RutaPublicadaFoto
+from app.models import User, RutaPublicada, Asistente, RutaPublicadaFoto, GrupoMiembro, Grupo
 from app.schemas import (
     RutaPublicadaCreate,
     RutaPublicadaUpdate,
@@ -61,61 +63,156 @@ def _foto_to_response(row: RutaPublicadaFoto, user_obj: User | None = None) -> R
     )
 
 
-def _can_edit_or_delete_published_route(route: RutaPublicada, current_user: User) -> bool:
-    return current_user.is_admin is True or current_user.id == route.organizador_id
+def _organizador_o_creador_grupo_puede_gestionar(
+    db: Session, route: RutaPublicada, current_user: User
+) -> bool:
+    if current_user.id == route.organizador_id:
+        return True
+    if route.visibilidad == "grupo" and route.grupo_id is not None:
+        grupo = db.query(Grupo).filter(Grupo.id == route.grupo_id).first()
+        if grupo is not None and grupo.creador_id == current_user.id:
+            return True
+    return False
+
+
+def _can_edit_published_route(db: Session, route: RutaPublicada, current_user: User) -> bool:
+    """Organizador, creador del grupo (salidas de grupo) o administrador pueden editar o despublicar la salida."""
+    if current_user.is_admin is True:
+        return True
+    return _organizador_o_creador_grupo_puede_gestionar(db, route, current_user)
+
+
+def _ids_grupos_usuario(db: Session, user_id: int) -> list[int]:
+    return [
+        r[0]
+        for r in db.query(GrupoMiembro.grupo_id).filter(GrupoMiembro.user_id == user_id).all()
+    ]
+
+
+def _filter_visibilidad_salidas(q, db: Session, user: Optional[User]):
+    """Salidas abiertas para todos; salidas de grupo solo si el usuario es miembro."""
+    es_abierta = RutaPublicada.visibilidad == "abierta"
+    if user is None:
+        return q.filter(es_abierta)
+    ids = _ids_grupos_usuario(db, user.id)
+    if not ids:
+        return q.filter(es_abierta)
+    return q.filter(
+        or_(
+            es_abierta,
+            and_(RutaPublicada.visibilidad == "grupo", RutaPublicada.grupo_id.in_(ids)),
+        )
+    )
+
+
+def _usuario_puede_ver_salida(db: Session, route: RutaPublicada, user: Optional[User]) -> bool:
+    if route.visibilidad == "abierta":
+        return True
+    if route.grupo_id is None:
+        return True
+    if user is None:
+        return False
+    return (
+        db.query(GrupoMiembro)
+        .filter(
+            GrupoMiembro.grupo_id == route.grupo_id,
+            GrupoMiembro.user_id == user.id,
+        )
+        .first()
+        is not None
+    )
+
+
+def _apply_ubicacion_filters(
+    q,
+    pais: Optional[str],
+    ccaa: Optional[str],
+    provincia: Optional[str],
+):
+    """Filtros por zona. España: `ccaa` = código comunidad, `provincia` = código INE 01–52 (exacto)."""
+    if pais:
+        q = q.filter(RutaPublicada.ubicacion_pais == pais.strip().upper()[:2])
+    if ccaa and ccaa.strip():
+        q = q.filter(RutaPublicada.ubicacion_region == ccaa.strip().upper()[:8])
+    if provincia is not None and str(provincia).strip() != "":
+        prov = str(provincia).strip().zfill(2)[:2]
+        q = q.filter(RutaPublicada.ubicacion_ciudad == prov)
+    return q
 
 
 @router.get("/historico", response_model=list[RutaPublicadaResponse])
-def get_historico_routes(db: Session = Depends(get_db)):
+def get_historico_routes(
+    pais: Optional[str] = Query(None, description="Código ISO país, ej. ES"),
+    ccaa: Optional[str] = Query(None, description="Código comunidad autónoma (ej. MD, CT)"),
+    provincia: Optional[str] = Query(None, description="Código INE provincia 01–52"),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
     today = _today_iso()
-    routes = (
+    q = (
         db.query(RutaPublicada)
         .options(
             joinedload(RutaPublicada.ruta),
             joinedload(RutaPublicada.organizador),
             joinedload(RutaPublicada.asistentes).joinedload(Asistente.user),
+            joinedload(RutaPublicada.grupo),
         )
         .filter(RutaPublicada.is_active.is_(True))
         .filter(RutaPublicada.dia_ruta < today)
-        .order_by(RutaPublicada.dia_ruta.desc(), RutaPublicada.hora_ruta.desc())
-        .all()
     )
+    q = _filter_visibilidad_salidas(q, db, current_user)
+    q = _apply_ubicacion_filters(q, pais, ccaa, provincia)
+    routes = q.order_by(RutaPublicada.dia_ruta.desc(), RutaPublicada.hora_ruta.desc()).all()
     return routes
 
 
 @router.get("", response_model=list[RutaPublicadaResponse])
-def get_published_routes(db: Session = Depends(get_db)):
+def get_published_routes(
+    pais: Optional[str] = Query(None, description="Código ISO país, ej. ES"),
+    ccaa: Optional[str] = Query(None, description="Código comunidad autónoma (ej. MD, CT)"),
+    provincia: Optional[str] = Query(None, description="Código INE provincia 01–52"),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
     today = _today_iso()
-    routes = (
+    q = (
         db.query(RutaPublicada)
         .options(
             joinedload(RutaPublicada.ruta),
             joinedload(RutaPublicada.organizador),
             joinedload(RutaPublicada.asistentes).joinedload(Asistente.user),
+            joinedload(RutaPublicada.grupo),
         )
         .filter(RutaPublicada.is_active.is_(True))
         .filter(RutaPublicada.dia_ruta >= today)
-        .order_by(RutaPublicada.dia_ruta.asc(), RutaPublicada.hora_ruta.asc())
-        .all()
     )
+    q = _filter_visibilidad_salidas(q, db, current_user)
+    q = _apply_ubicacion_filters(q, pais, ccaa, provincia)
+    routes = q.order_by(RutaPublicada.dia_ruta.asc(), RutaPublicada.hora_ruta.asc()).all()
     return routes
 
 
 @router.get("/calendario/{fecha}", response_model=list[RutaPublicadaResponse])
-def get_routes_by_date(fecha: str, db: Session = Depends(get_db)):
-    routes = (
+def get_routes_by_date(
+    fecha: str,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    q = (
         db.query(RutaPublicada)
         .options(
             joinedload(RutaPublicada.ruta),
             joinedload(RutaPublicada.organizador),
             joinedload(RutaPublicada.asistentes).joinedload(Asistente.user),
+            joinedload(RutaPublicada.grupo),
         )
         .filter(
             RutaPublicada.dia_ruta == fecha,
             RutaPublicada.is_active.is_(True),
         )
-        .all()
     )
+    q = _filter_visibilidad_salidas(q, db, current_user)
+    routes = q.order_by(RutaPublicada.hora_ruta.asc()).all()
     return routes
 
 
@@ -136,10 +233,31 @@ def publish_route(
             detail="Maximum 5 routes per day reached",
         )
 
-    new_published = RutaPublicada(
-        **ruta_publicada.dict(),
-        organizador_id=current_user.id,
-    )
+    payload = ruta_publicada.model_dump()
+    if payload.get("visibilidad") == "grupo":
+        gid = payload.get("grupo_id")
+        if not gid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Indica el grupo para una salida de grupo.",
+            )
+        miembro = (
+            db.query(GrupoMiembro)
+            .filter(
+                GrupoMiembro.grupo_id == gid,
+                GrupoMiembro.user_id == current_user.id,
+            )
+            .first()
+        )
+        if not miembro:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Debes ser miembro del grupo para publicar una salida ahí.",
+            )
+    else:
+        payload["grupo_id"] = None
+
+    new_published = RutaPublicada(**payload, organizador_id=current_user.id)
     db.add(new_published)
     db.commit()
     db.refresh(new_published)
@@ -154,6 +272,9 @@ def add_attendee(
 ):
     route = db.query(RutaPublicada).filter(RutaPublicada.id == ruta_publicada_id).first()
     if not route:
+        raise HTTPException(status_code=404, detail="Route not found")
+
+    if not _usuario_puede_ver_salida(db, route, current_user):
         raise HTTPException(status_code=404, detail="Route not found")
 
     if _route_day_passed(route.dia_ruta):
@@ -190,6 +311,9 @@ def remove_attendee(
     db: Session = Depends(get_db),
 ):
     route = db.query(RutaPublicada).filter(RutaPublicada.id == ruta_publicada_id).first()
+    if route and not _usuario_puede_ver_salida(db, route, current_user):
+        raise HTTPException(status_code=404, detail="Route not found")
+
     if route and _route_day_passed(route.dia_ruta):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -216,6 +340,7 @@ def _load_publicada(db: Session, pk: int) -> RutaPublicada:
             joinedload(RutaPublicada.ruta),
             joinedload(RutaPublicada.organizador),
             joinedload(RutaPublicada.asistentes).joinedload(Asistente.user),
+            joinedload(RutaPublicada.grupo),
         )
         .filter(RutaPublicada.id == pk)
         .first()
@@ -236,14 +361,61 @@ def update_published_route(
     if not route:
         raise HTTPException(status_code=404, detail="Route not found")
 
-    if not _can_edit_or_delete_published_route(route, current_user):
+    if not _can_edit_published_route(db, route, current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo el organizador o un administrador pueden editar la ruta",
+            detail="Solo el organizador, el creador del grupo (en salidas de grupo) o un administrador pueden editar la ruta",
         )
 
     data = body.model_dump(exclude_unset=True)
-    for key in ("dia_ruta", "hora_ruta", "link_encuentro_personalizado"):
+
+    def _miembro_grupo(gid: int) -> bool:
+        return (
+            db.query(GrupoMiembro)
+            .filter(GrupoMiembro.grupo_id == gid, GrupoMiembro.user_id == current_user.id)
+            .first()
+            is not None
+        )
+
+    if "visibilidad" in data:
+        route.visibilidad = data["visibilidad"]
+        if route.visibilidad == "abierta":
+            route.grupo_id = None
+        else:
+            gid = data.get("grupo_id", route.grupo_id)
+            if not gid:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Salida de grupo requiere grupo_id.",
+                )
+            if not _miembro_grupo(gid):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Debes ser miembro del grupo.",
+                )
+            route.grupo_id = gid
+    elif "grupo_id" in data and route.visibilidad == "grupo":
+        gid = data["grupo_id"]
+        if not gid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="grupo_id no válido.",
+            )
+        if not _miembro_grupo(gid):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Debes ser miembro del grupo.",
+            )
+        route.grupo_id = gid
+
+    for key in (
+        "dia_ruta",
+        "hora_ruta",
+        "link_encuentro_personalizado",
+        "ubicacion_pais",
+        "ubicacion_region",
+        "ubicacion_ciudad",
+    ):
         if key in data:
             setattr(route, key, data[key])
 
@@ -261,10 +433,10 @@ def unpublish_route(
     if not route:
         raise HTTPException(status_code=404, detail="Route not found")
 
-    if not _can_edit_or_delete_published_route(route, current_user):
+    if not _can_edit_published_route(db, route, current_user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Solo el organizador o un administrador pueden eliminar la ruta",
+            detail="Solo el organizador de la salida, el creador del grupo (en salidas de grupo) o un administrador pueden quitarla del calendario o del histórico.",
         )
 
     db.query(Asistente).filter(Asistente.ruta_publicada_id == ruta_publicada_id).delete()
@@ -284,9 +456,15 @@ def unpublish_route(
     "/{ruta_publicada_id}/fotos",
     response_model=list[RutaPublicadaFotoResponse],
 )
-def list_route_photos(ruta_publicada_id: int, db: Session = Depends(get_db)):
+def list_route_photos(
+    ruta_publicada_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
     route = db.query(RutaPublicada).filter(RutaPublicada.id == ruta_publicada_id).first()
     if not route or not route.is_active:
+        raise HTTPException(status_code=404, detail="Route not found")
+    if not _usuario_puede_ver_salida(db, route, current_user):
         raise HTTPException(status_code=404, detail="Route not found")
 
     rows = (
@@ -311,6 +489,8 @@ async def upload_route_photo(
 ):
     route = db.query(RutaPublicada).filter(RutaPublicada.id == ruta_publicada_id).first()
     if not route or not route.is_active:
+        raise HTTPException(status_code=404, detail="Route not found")
+    if not _usuario_puede_ver_salida(db, route, current_user):
         raise HTTPException(status_code=404, detail="Route not found")
 
     if not _route_day_passed(route.dia_ruta):
@@ -368,6 +548,10 @@ def delete_route_photo(
         .first()
     )
     if not row:
+        raise HTTPException(status_code=404, detail="Foto no encontrada")
+
+    route = db.query(RutaPublicada).filter(RutaPublicada.id == ruta_publicada_id).first()
+    if not route or not _usuario_puede_ver_salida(db, route, current_user):
         raise HTTPException(status_code=404, detail="Foto no encontrada")
 
     if row.user_id != current_user.id and not current_user.is_admin:

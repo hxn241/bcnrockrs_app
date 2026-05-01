@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from 'react'
+import { createContext, useState, useContext, useEffect, useCallback } from 'react'
 import { authService } from '../services/api'
 
 const AuthContext = createContext()
@@ -7,6 +7,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+
+  const persistUser = useCallback((userData) => {
+    localStorage.setItem('user', JSON.stringify(userData))
+    setUser(userData)
+  }, [])
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -43,8 +48,7 @@ export const AuthProvider = ({ children }) => {
       const { access_token, user: userData } = response.data
       
       localStorage.setItem('token', access_token)
-      localStorage.setItem('user', JSON.stringify(userData))
-      setUser(userData)
+      persistUser(userData)
       
       return userData
     } catch (err) {
@@ -59,8 +63,22 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
+  const updateProfile = async (payload) => {
+    const response = await authService.updateMe(payload)
+    persistUser(response.data)
+    return response.data
+  }
+
+  const refreshUser = async () => {
+    const response = await authService.getMe()
+    persistUser(response.data)
+    return response.data
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, register, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, error, register, login, logout, updateProfile, refreshUser, persistUser }}
+    >
       {children}
     </AuthContext.Provider>
   )

@@ -55,8 +55,58 @@
   text-underline-offset: 2px;
 }
 
+.catalogo-rutas-row-pendiente {
+  background: rgba(180, 40, 40, 0.06);
+}
+
+.catalogo-rutas-badge-pendiente {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(180, 40, 40, 0.12);
+  color: #922;
+}
+
+.catalogo-rutas-badge-ok {
+  color: #999;
+  font-size: 13px;
+}
+
+.catalogo-rutas-btn-marcar {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5d4037;
+  background: rgba(93, 64, 55, 0.12);
+  border: 1px solid rgba(93, 64, 55, 0.25);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.catalogo-rutas-btn-desmarcar {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #37474f;
+  background: transparent;
+  border: 1px solid rgba(55, 71, 79, 0.28);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.catalogo-rutas-btn-marcar:disabled,
+.catalogo-rutas-btn-desmarcar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .catalogo-rutas-col-action {
-  width: 200px;
+  min-width: 280px;
+  width: 28%;
   text-align: right;
 }
 

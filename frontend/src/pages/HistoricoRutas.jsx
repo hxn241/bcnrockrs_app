@@ -1,9 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { rutasPublicadasService } from '../services/api'
 import RouteDetailModal from '../components/RouteDetailModal'
 import Navigation from '../components/Navigation'
+import { formatUbicacionSalida } from '../constants/paisesSalida'
+import {
+  COMUNIDADES_AUTONOMAS,
+  provinciasPorComunidad,
+  tieneZonaSalida
+} from '../constants/espanaUbicacion'
 import '../styles/Dashboard.css'
 
 export default function HistoricoRutas() {
@@ -11,6 +17,8 @@ export default function HistoricoRutas() {
   const [routes, setRoutes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [filtroCcaa, setFiltroCcaa] = useState('')
+  const [filtroProvincia, setFiltroProvincia] = useState('')
   const [selectedRoute, setSelectedRoute] = useState(null)
   const [showRouteDetail, setShowRouteDetail] = useState(false)
   const [expandedMonths, setExpandedMonths] = useState({})
@@ -27,10 +35,40 @@ export default function HistoricoRutas() {
     loadRoutes()
   }, [])
 
+  const provinciasFiltro = useMemo(() => provinciasPorComunidad(filtroCcaa), [filtroCcaa])
+
+  const filtrosParaApi = () => {
+    const f = {}
+    if (filtroCcaa.trim()) f.ccaa = filtroCcaa.trim().toUpperCase()
+    if (filtroProvincia.trim()) f.provincia = filtroProvincia.trim().padStart(2, '0').slice(0, 2)
+    return f
+  }
+
   const loadRoutes = async () => {
     try {
       setLoading(true)
-      const response = await rutasPublicadasService.getHistoricoRoutes()
+      const response = await rutasPublicadasService.getHistoricoRoutes(filtrosParaApi())
+      setRoutes(response.data)
+    } catch (err) {
+      setError('Error al cargar el histórico')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const aplicarFiltros = () => {
+    setError('')
+    loadRoutes()
+  }
+
+  const limpiarFiltros = async () => {
+    setFiltroCcaa('')
+    setFiltroProvincia('')
+    setError('')
+    try {
+      setLoading(true)
+      const response = await rutasPublicadasService.getHistoricoRoutes({})
       setRoutes(response.data)
     } catch (err) {
       setError('Error al cargar el histórico')
@@ -86,6 +124,54 @@ export default function HistoricoRutas() {
           </p>
         </header>
 
+        <section className="dashboard-filtros-zona" aria-label="Filtrar histórico por zona en España">
+          <h2 className="dashboard-filtros-zona-title">Filtrar por zona (España)</h2>
+          <div className="dashboard-filtros-zona-grid">
+            <div>
+              <label htmlFor="hist-filtro-ccaa">Comunidad autónoma</label>
+              <select
+                id="hist-filtro-ccaa"
+                value={filtroCcaa}
+                onChange={(e) => {
+                  setFiltroCcaa(e.target.value)
+                  setFiltroProvincia('')
+                }}
+              >
+                <option value="">Todas</option>
+                {COMUNIDADES_AUTONOMAS.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="hist-filtro-provincia">Provincia</label>
+              <select
+                id="hist-filtro-provincia"
+                value={filtroProvincia}
+                onChange={(e) => setFiltroProvincia(e.target.value)}
+                disabled={!filtroCcaa}
+              >
+                <option value="">Todas (de la CCAA)</option>
+                {provinciasFiltro.map((p) => (
+                  <option key={p.code} value={p.code}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="dashboard-filtros-zona-actions">
+            <button type="button" className="dashboard-filtros-aplicar" onClick={aplicarFiltros}>
+              Aplicar filtros
+            </button>
+            <button type="button" className="dashboard-filtros-limpiar" onClick={limpiarFiltros}>
+              Limpiar
+            </button>
+          </div>
+        </section>
+
         {error && <div className="error-message">{error}</div>}
 
         {loading ? (
@@ -140,6 +226,16 @@ export default function HistoricoRutas() {
                               tabIndex={0}
                             >
                               <div className="route-name">{route.ruta.nombre}</div>
+                              {tieneZonaSalida(route) && (
+                                <div className="route-ubicacion-line">🌍 {formatUbicacionSalida(route)}</div>
+                              )}
+                              <div
+                                className={`route-salida-visibilidad ${route.visibilidad === 'grupo' ? 'grupo' : 'abierta'}`}
+                              >
+                                {route.visibilidad === 'grupo'
+                                  ? `Grupo: ${route.grupo?.nombre || '…'}`
+                                  : 'Salida abierta'}
+                              </div>
                               <div className="route-time">🕐 {route.hora_ruta}</div>
                               <div className="route-attendees">
                                 👥 {route.asistentes.length} participante

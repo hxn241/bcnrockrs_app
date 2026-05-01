@@ -6,7 +6,7 @@ const api = createApiClient({
   getToken: () => localStorage.getItem('token')
 })
 
-const { authService, rutasService, rutasPublicadasService } = createServices(api)
+const { authService, rutasService, rutasPublicadasService, gruposService } = createServices(api)
 
-export { authService, rutasService, rutasPublicadasService }
+export { authService, rutasService, rutasPublicadasService, gruposService }
 export default api
