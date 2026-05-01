@@ -45,7 +45,7 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
   const loadRutas = async () => {
     try {
       setLoading(true)
-      const response = await rutasService.getAllRoutes()
+      const response = await rutasService.getRoutesForPublish()
       setRutas(response.data)
       if (response.data.length > 0) {
         const firstId = String(response.data[0].id)

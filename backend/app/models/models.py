@@ -32,8 +32,10 @@ class Ruta(Base):
     fecha = Column(String(50), default="Por definir")
     hora = Column(String(50), default="Por confirmar")
     created_at = Column(DateTime, default=datetime.utcnow)
-    
+    creador_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+
     publicaciones = relationship("RutaPublicada", back_populates="ruta")
+    creador = relationship("User", foreign_keys=[creador_id])
 
 class RutaPublicada(Base):
     __tablename__ = "rutas_publicadas"
@@ -51,6 +53,24 @@ class RutaPublicada(Base):
     ruta = relationship("Ruta", back_populates="publicaciones")
     organizador = relationship("User")
     asistentes = relationship("Asistente", back_populates="ruta_publicada")
+    fotos = relationship(
+        "RutaPublicadaFoto",
+        back_populates="ruta_publicada",
+        cascade="all, delete-orphan",
+    )
+
+
+class RutaPublicadaFoto(Base):
+    __tablename__ = "ruta_publicada_fotos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ruta_publicada_id = Column(Integer, ForeignKey("rutas_publicadas.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    filename = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    ruta_publicada = relationship("RutaPublicada", back_populates="fotos")
+    user = relationship("User")
 
 class Asistente(Base):
     __tablename__ = "asistentes"

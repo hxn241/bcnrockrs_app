@@ -31,6 +31,17 @@ def _sqlite_add_user_moto_columns() -> None:
             conn.execute(text("ALTER TABLE users ADD COLUMN moto_anio INTEGER"))
 
 
+def _sqlite_add_ruta_creador_column() -> None:
+    if "sqlite" not in settings.database_url:
+        return
+    with engine.begin() as conn:
+        rows = conn.execute(text("PRAGMA table_info(rutas)")).fetchall()
+        cols = {row[1] for row in rows}
+        if "creador_id" not in cols:
+            conn.execute(text("ALTER TABLE rutas ADD COLUMN creador_id INTEGER REFERENCES users(id)"))
+
+
 def init_db():
     Base.metadata.create_all(bind=engine)
     _sqlite_add_user_moto_columns()
+    _sqlite_add_ruta_creador_column()

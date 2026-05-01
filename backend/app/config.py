@@ -1,5 +1,9 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings
 from typing import Optional
+
+_BACKEND_ROOT = Path(__file__).resolve().parent.parent
+
 
 class Settings(BaseSettings):
     # Database
@@ -30,6 +34,10 @@ class Settings(BaseSettings):
 
     # Google Maps
     google_maps_api_key: str = ""
+
+    # Subidas (fotos de rutas pasadas)
+    uploads_dir: str = str(_BACKEND_ROOT / "uploads")
+    max_upload_mb: int = 8
 
     class Config:
         env_file = ".env"

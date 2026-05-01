@@ -64,5 +64,5 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     return {
         "access_token": str(access_token) if not isinstance(access_token, str) else access_token,
         "token_type": "bearer",
-        "user": UserResponse.from_orm(db_user)
+        "user": UserResponse.model_validate(db_user)
     }

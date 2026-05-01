@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 from app.config import settings
 from app.database import init_db
 from app.routes import auth_router, rutas_router, rutas_publicadas_router
@@ -32,6 +36,10 @@ app.include_router(auth_router)
 app.include_router(rutas_router)
 app.include_router(rutas_publicadas_router)
 app.include_router(maps_router)
+
+_upload_dir = Path(settings.uploads_dir)
+_upload_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(_upload_dir)), name="uploads")
 
 @app.get("/")
 def read_root():

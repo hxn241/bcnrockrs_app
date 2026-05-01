@@ -14,6 +14,9 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']
+  }
   return config
 })
 
@@ -35,6 +38,8 @@ export const authService = {
 
 export const rutasService = {
   getAllRoutes: () => api.get('/rutas'),
+  /** Catálogo para el modal de publicar (cualquier usuario autenticado). */
+  getRoutesForPublish: () => api.get('/rutas/para-publicar'),
   getRoute: (id) => api.get(`/rutas/${id}`),
   createRoute: (ruta) => api.post('/rutas', ruta),
   updateRoute: (id, ruta) => api.put(`/rutas/${id}`, ruta),
@@ -42,13 +47,24 @@ export const rutasService = {
 }
 
 export const rutasPublicadasService = {
+  /** Salidas de hoy en adelante (activas). */
   getPublishedRoutes: () => api.get('/rutas-publicadas'),
+  /** Salidas pasadas (activas), para histórico. */
+  getHistoricoRoutes: () => api.get('/rutas-publicadas/historico'),
   getRoutesByDate: (fecha) => api.get(`/rutas-publicadas/calendario/${fecha}`),
   publishRoute: (ruta) => api.post('/rutas-publicadas', ruta),
   addAttendee: (rutaId) => api.post(`/rutas-publicadas/${rutaId}/asistentes`),
   removeAttendee: (rutaId) => api.delete(`/rutas-publicadas/${rutaId}/asistentes`),
   unpublishRoute: (rutaId) => api.delete(`/rutas-publicadas/${rutaId}`),
-  updateRoute: (rutaId, updateData) => api.put(`/rutas-publicadas/${rutaId}`, updateData)
+  updateRoute: (rutaId, updateData) => api.put(`/rutas-publicadas/${rutaId}`, updateData),
+  getFotos: (rutaId) => api.get(`/rutas-publicadas/${rutaId}/fotos`),
+  uploadFoto: (rutaId, file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return api.post(`/rutas-publicadas/${rutaId}/fotos`, fd)
+  },
+  deleteFoto: (rutaId, fotoId) =>
+    api.delete(`/rutas-publicadas/${rutaId}/fotos/${fotoId}`)
 }
 
 export default api

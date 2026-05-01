@@ -56,7 +56,20 @@ class RutaResponse(BaseModel):
     fecha: str
     hora: str
     created_at: datetime
-    
+    creador_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+
+class RutaPublicadaFotoResponse(BaseModel):
+    id: int
+    ruta_publicada_id: int
+    user_id: int
+    url: str
+    created_at: datetime
+    user: Optional[UserResponse] = None
+
     class Config:
         from_attributes = True
 

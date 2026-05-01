@@ -3,9 +3,23 @@ import { rutasPublicadasService } from '../services/api'
 import MapPreview from './MapPreview'
 import LocationLink from './LocationLink'
 import GoogleMapsLinkInfo from './GoogleMapsLinkInfo'
+import RoutePhotosGallery from './RoutePhotosGallery'
 import '../styles/RouteDetailModal.css'
 
-export default function RouteDetailModal({ route, user, onClose, onRefresh }) {
+function isSalidaPasada(diaRuta) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const d = new Date(`${diaRuta}T12:00:00`)
+  return d < today
+}
+
+export default function RouteDetailModal({
+  route,
+  user,
+  onClose,
+  onRefresh,
+  historico = false
+}) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [asistentes, setAsistentes] = useState(route.asistentes)
@@ -27,6 +41,11 @@ export default function RouteDetailModal({ route, user, onClose, onRefresh }) {
   const restaurantUrl = route.link_restaurante_personalizado || route.ruta?.link_restaurante
   const rutaGmapsUrl = route.ruta?.link_ruta
   const catalogoEncuentro = route.ruta?.link_encuentro || ''
+  const salidaPasada = historico === true || isSalidaPasada(route.dia_ruta)
+
+  useEffect(() => {
+    setAsistentes(route.asistentes || [])
+  }, [route.id, route.asistentes])
 
   useEffect(() => {
     if (isEditMode) return
@@ -206,6 +225,11 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
             <>
               {/* Fecha, hora, punto de encuentro, organizador y nº participantes */}
               <div className="route-info-section">
+                {salidaPasada && !historico && (
+                  <p className="route-historico-badge">
+                    Esta salida ya pasó; también está en <strong>Histórico</strong>. Aquí puedes ver fotos y participantes.
+                  </p>
+                )}
                 <p><strong>📅 Fecha:</strong> {route.dia_ruta}</p>
                 <p><strong>🕐 Hora de Salida:</strong> {route.hora_ruta}</p>
                 <LocationLink
@@ -249,7 +273,9 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
           <div className="attendees-section">
             <h3>👥 Participantes ({asistentes.length})</h3>
             {asistentes.length === 0 ? (
-              <p className="no-attendees">Sé el primero en apuntarte</p>
+              <p className="no-attendees">
+                {salidaPasada ? 'No constaban participantes apuntados.' : 'Sé el primero en apuntarte'}
+              </p>
             ) : (
               <ul className="attendees-list">
                 {asistentes.map((attendee) => (
@@ -261,25 +287,34 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
             )}
           </div>
 
+          {salidaPasada && (
+            <RoutePhotosGallery rutaPublicadaId={route.id} user={user} />
+          )}
+
               {/* Botones */}
               <div className="button-group">
-                <button
-                  className={`btn ${isUserAttending ? 'btn-remove' : 'btn-attend'}`}
-                  onClick={handleAttendance}
-                  disabled={loading}
-                >
-                  {loading ? '⏳ Cargando...' : (isUserAttending ? '❌ Desapuntarse' : '✅ Apuntarse')}
-                </button>
-                <a
-                  href={`https://api.whatsapp.com/send?text=${encodeURIComponent(generateRouteDetails())}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-whatsapp"
-                  title="Compartir en WhatsApp"
-                >
-                  💬 WhatsApp
-                </a>
-                {canManageRoute && (
+                {!salidaPasada && (
+                  <button
+                    className={`btn ${isUserAttending ? 'btn-remove' : 'btn-attend'}`}
+                    onClick={handleAttendance}
+                    disabled={loading || !user}
+                    title={!user ? 'Inicia sesión para apuntarte' : undefined}
+                  >
+                    {loading ? '⏳ Cargando...' : (isUserAttending ? '❌ Desapuntarse' : '✅ Apuntarse')}
+                  </button>
+                )}
+                {!historico && (
+                  <a
+                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(generateRouteDetails())}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-whatsapp"
+                    title="Compartir en WhatsApp"
+                  >
+                    💬 WhatsApp
+                  </a>
+                )}
+                {canManageRoute && !salidaPasada && (
                   <button
                     className="btn btn-edit"
                     onClick={startEdit}
@@ -289,7 +324,7 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
                     ✏️ Editar
                   </button>
                 )}
-                {canManageRoute && (
+                {canManageRoute && !salidaPasada && (
                   <button
                     className="btn btn-danger"
                     onClick={handleDeleteRoute}

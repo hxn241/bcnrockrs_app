@@ -28,6 +28,9 @@ export default function Navigation({ user, onLogout }) {
           <li>
             <Link to="/calendario">Calendario</Link>
           </li>
+          <li>
+            <Link to="/historico">Histórico</Link>
+          </li>
           {user?.is_admin && (
             <li>
               <Link to="/catalogo">Catálogo de rutas</Link>

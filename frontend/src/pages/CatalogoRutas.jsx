@@ -7,7 +7,10 @@ import EditRouteModal from '../components/EditRouteModal'
 import '../styles/Dashboard.css'
 import '../styles/CatalogoRutas.css'
 
-function formatApiError(err) {
+function formatApiError(err, fallback = 'Operación no disponible.') {
+  if (!err.response) {
+    return 'No hay respuesta del servidor. ¿Está arrancado el API y bien la URL (VITE_API_URL / mismo host)?'
+  }
   const d = err.response?.data?.detail
   if (typeof d === 'string') return d
   if (Array.isArray(d) && d.length > 0) {
@@ -17,7 +20,7 @@ function formatApiError(err) {
   }
   if (err.response?.status === 403) return 'No tienes permiso (solo administradores).'
   if (err.response?.status === 401) return 'Sesión caducada: vuelve a iniciar sesión.'
-  return 'No se pudo eliminar la ruta.'
+  return fallback
 }
 
 export default function CatalogoRutas() {
@@ -46,7 +49,7 @@ export default function CatalogoRutas() {
       const response = await rutasService.getAllRoutes()
       setRutas(response.data)
     } catch (err) {
-      setError('Error al cargar el catálogo de rutas')
+      setError(formatApiError(err, 'Error al cargar el catálogo de rutas.'))
     } finally {
       setLoading(false)
     }
@@ -62,7 +65,7 @@ export default function CatalogoRutas() {
       await rutasService.deleteRoute(ruta.id)
       setRutas((prev) => prev.filter((r) => r.id !== ruta.id))
     } catch (err) {
-      setError(formatApiError(err))
+      setError(formatApiError(err, 'No se pudo eliminar la ruta.'))
     } finally {
       setDeletingId(null)
     }
@@ -95,12 +98,14 @@ export default function CatalogoRutas() {
           borrarlas antes.
         </p>
 
-        {error && <div className="error-message">{error}</div>}
-
         {loading ? (
           <div className="loading">Cargando…</div>
+        ) : error ? (
+          <div className="error-message">{error}</div>
         ) : rutas.length === 0 ? (
-          <p className="catalogo-rutas-empty">No hay rutas en la base de datos.</p>
+          <p className="catalogo-rutas-empty">
+            No hay rutas guardadas aún (siguen usando la tabla <code>rutas</code> de siempre; no hay una tabla nueva solo para el catálogo). Puedes dar de alta plantillas publicando desde el calendario con «Crear nueva».
+          </p>
         ) : (
           <div className="catalogo-rutas-table-wrap">
             <table className="catalogo-rutas-table">
