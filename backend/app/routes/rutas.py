@@ -11,6 +11,7 @@ from app.models import User, Ruta, RutaPublicada, Asistente, RutaPublicadaFoto
 from app.models.models import RutaHistorico
 from app.schemas import RutaCreate, RutaResponse, RutaUpdate
 from app.auth import get_current_user, get_admin_user
+from app.routes.maps import compute_route_embed_url
 
 router = APIRouter(prefix="/rutas", tags=["rutas"])
 
@@ -59,6 +60,7 @@ def create_route(
     db: Session = Depends(get_db),
 ):
     new_route = Ruta(**ruta.dict(), creador_id=current_user.id)
+    new_route.embed_recorrido_url = compute_route_embed_url(new_route.link_ruta)
     db.add(new_route)
     db.commit()
     db.refresh(new_route)
@@ -83,8 +85,11 @@ def update_route(
         )
 
     update_data = ruta_update.dict(exclude_unset=True)
+    link_changed = "link_ruta" in update_data
     for field, value in update_data.items():
         setattr(route, field, value)
+    if link_changed:
+        route.embed_recorrido_url = compute_route_embed_url(route.link_ruta)
 
     db.commit()
     db.refresh(route)

@@ -57,6 +57,7 @@ class RutaResponse(BaseModel):
     hora: str
     created_at: datetime
     creador_id: Optional[int] = None
+    embed_recorrido_url: Optional[str] = None
 
     class Config:
         from_attributes = True

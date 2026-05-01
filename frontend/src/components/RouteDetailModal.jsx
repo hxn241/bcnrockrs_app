@@ -244,6 +244,7 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
           <div className="maps-section">
             <MapPreview
               url={rutaGmapsUrl}
+              embedUrl={route.ruta?.embed_recorrido_url}
               title="🗺️ Recorrido"
             />
             {rutaGmapsUrl && (

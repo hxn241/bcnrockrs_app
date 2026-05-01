@@ -23,6 +23,7 @@ export default function RouteCard({ route, user, onAttend, onRemove }) {
           <div style={{ marginTop: '10px', marginBottom: '10px' }}>
             <MapPreview
               url={route.ruta.link_ruta}
+              embedUrl={route.ruta.embed_recorrido_url}
               title="🗺️ Recorrido"
             />
           </div>

@@ -29,6 +29,7 @@ class Ruta(Base):
     link_ruta = Column(Text, nullable=False)
     link_encuentro = Column(Text, nullable=False)
     link_restaurante = Column(Text, nullable=True)
+    embed_recorrido_url = Column(Text, nullable=True)
     fecha = Column(String(50), default="Por definir")
     hora = Column(String(50), default="Por confirmar")
     created_at = Column(DateTime, default=datetime.utcnow)

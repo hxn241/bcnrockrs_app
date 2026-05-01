@@ -214,6 +214,7 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
                       <div className="map-section">
                         <GoogleMapEmbed
                           url={selectedRuta.link_ruta}
+                          embedUrl={selectedRuta.embed_recorrido_url}
                           title="Recorrido"
                         />
                       </div>

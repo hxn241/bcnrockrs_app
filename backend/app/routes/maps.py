@@ -317,6 +317,45 @@ def _segments_to_embed_url(segments: list[str]) -> str:
     return embed_url
 
 
+def build_embed_url_from_dir_maps_url(url: str) -> Optional[str]:
+    """
+    A partir de una URL ya expandida y sin consent (puede ser /maps/dir/…).
+    Devuelve la URL del iframe Embed API o None si no es un recorrido válido.
+    """
+    try:
+        segments = extract_route_segments(url, unwrap_consent=False)
+        if not segments or len(segments) < 2:
+            return None
+        pairs_2m2, pairs_all = parse_dir_data_coordinate_pairs(url)
+        segments = enrich_ambiguous_stops(segments, pairs_2m2, pairs_all)
+        segments = substitute_trivial_map_path_tokens(segments, pairs_all)
+        segments = trim_circular_duplicate_endpoint(segments)
+        segments = simplify_segments_for_directions_embed(segments)
+        if len(segments) < 2:
+            return None
+        return _segments_to_embed_url(segments)
+    except Exception as e:
+        _log_debug(f"maps: build_embed_url_from_dir_maps_url: {e}")
+        return None
+
+
+def compute_route_embed_url(link_ruta: str) -> Optional[str]:
+    """
+    Desde el enlace guardado en BD (corto o largo): resuelve redirects y genera
+    la URL del iframe una sola vez para persistir en servidor.
+    """
+    url = (link_ruta or "").strip()
+    if not url:
+        return None
+    try:
+        url = resolve_short_maps_url(url)
+        url = unwrap_google_consent_url(url)
+        return build_embed_url_from_dir_maps_url(url)
+    except Exception as e:
+        _log_debug(f"maps: compute_route_embed_url: {e}")
+        return None
+
+
 @router.get("/name/{url:path}")
 def get_location_name(url: str):
     try:
@@ -359,19 +398,14 @@ def get_map_embed(url: str):
                 detail="No se pudieron extraer los puntos de la ruta",
             )
 
-        pairs_2m2, pairs_all = parse_dir_data_coordinate_pairs(url)
-        segments = enrich_ambiguous_stops(segments, pairs_2m2, pairs_all)
-        segments = substitute_trivial_map_path_tokens(segments, pairs_all)
-        segments = trim_circular_duplicate_endpoint(segments)
-        segments = simplify_segments_for_directions_embed(segments)
-
-        if len(segments) < 2:
+        embed = build_embed_url_from_dir_maps_url(url)
+        if not embed:
             raise HTTPException(
                 status_code=400,
                 detail="No se pudieron extraer los puntos de la ruta",
             )
 
-        return {"embed_url": _segments_to_embed_url(segments)}
+        return {"embed_url": embed}
 
     except HTTPException:
         raise

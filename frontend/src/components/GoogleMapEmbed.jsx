@@ -2,14 +2,25 @@ import { useEffect, useState } from 'react'
 import { getApiBaseUrl } from '../utils/apiBaseUrl'
 import '../styles/GoogleMapEmbed.css'
 
-export default function GoogleMapEmbed({ url, title }) {
-  const [embedUrl, setEmbedUrl] = useState(null)
-  const [loading, setLoading] = useState(true)
+/**
+ * Mapa del recorrido: si `embedUrl` viene de la BD (`embed_recorrido_url`), no se llama al API.
+ * Si no, se obtiene con GET /maps/embed/… (rutas antiguas o si falló la generación al guardar).
+ */
+export default function GoogleMapEmbed({ url, embedUrl: storedEmbedUrl, title }) {
+  const [embedUrl, setEmbedUrl] = useState(storedEmbedUrl || null)
+  const [loading, setLoading] = useState(!storedEmbedUrl && Boolean(url))
   const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!url) {
       setEmbedUrl(null)
+      setError(null)
+      setLoading(false)
+      return
+    }
+
+    if (storedEmbedUrl) {
+      setEmbedUrl(storedEmbedUrl)
       setError(null)
       setLoading(false)
       return
@@ -58,7 +69,7 @@ export default function GoogleMapEmbed({ url, title }) {
 
     run()
     return () => ac.abort()
-  }, [url])
+  }, [url, storedEmbedUrl])
 
   if (!url) {
     return <div className="map-empty">📍 Sin ubicación</div>
