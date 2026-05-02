@@ -6,8 +6,8 @@ _BACKEND_ROOT = Path(__file__).resolve().parent.parent
 
 
 class Settings(BaseSettings):
-    # Database
-    database_url: str = "sqlite:///./rutas_moto.db"
+    # Database - uses Neon PostgreSQL via DATABASE_URL env var
+    database_url: str = "postgresql://neondb_owner:npg_0Aon8VYsyMcE@ep-crimson-wind-a2h75rbp-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require"
     
     # JWT
     secret_key: str = "tu-clave-secreta-cambiar-en-produccion"
