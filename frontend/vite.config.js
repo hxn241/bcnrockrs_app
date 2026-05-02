@@ -7,7 +7,7 @@ export default defineConfig({
     // Escucha en 0.0.0.0 para acceder por IP local, túnel o hexen88.dynv6.net
     host: true,
     port: 3000,
-    allowedHosts: ['hexen88.dynv6.net', 'localhost', '127.0.0.1'],
+    allowedHosts: ['hexen88.dynv6.net', 'localhost', '127.0.0.1', 'sb-2cyaets2kw1z.vercel.run'],
     proxy: {
       '/api': {
         target: 'http://localhost:8002',

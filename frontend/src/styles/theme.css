@@ -1,19 +1,49 @@
-/* Paleta KurveMaster: carbón, crema, terracota (encaja con rojos del logo) */
+/* Paleta KurveMaster: Rojo racing, Negro profundo, Blanco limpio */
 :root {
-  --bcn-charcoal: #2a2420;
-  --bcn-charcoal-soft: #3d332c;
-  --bcn-cream: #ebe2d4;
-  --bcn-cream-pale: #f7f1e8;
-  --bcn-cream-warm: #fffcf7;
-  --bcn-terracotta: #c45e2e;
-  --bcn-terracotta-bright: #d97b3c;
-  --bcn-terracotta-deep: #9e4a1f;
-  --bcn-terracotta-mid: #b86b2a;
-  --bcn-text: #1c1814;
-  --bcn-text-muted: #5c5248;
-  --bcn-border: #e0d5c8;
-  --bcn-gradient-btn: linear-gradient(135deg, #d97b3c 0%, #b85a28 100%);
-  --bcn-gradient-btn-hover: linear-gradient(135deg, #c97833 0%, #9e4a1f 100%);
-  --bcn-shadow: 0 4px 24px rgba(42, 36, 32, 0.1);
-  --bcn-glow-terracotta: 0 6px 20px rgba(196, 94, 46, 0.35);
+  /* Colores principales del logo */
+  --km-red: #DC2626;
+  --km-red-bright: #EF4444;
+  --km-red-deep: #B91C1C;
+  --km-red-dark: #991B1B;
+  
+  /* Negros y grises */
+  --km-black: #0F0F0F;
+  --km-black-soft: #1A1A1A;
+  --km-charcoal: #2D2D2D;
+  --km-gray-dark: #404040;
+  --km-gray: #6B7280;
+  --km-gray-light: #9CA3AF;
+  --km-gray-pale: #E5E7EB;
+  
+  /* Blancos */
+  --km-white: #FFFFFF;
+  --km-white-soft: #FAFAFA;
+  --km-white-warm: #F9FAFB;
+  
+  /* Textos */
+  --km-text: #111827;
+  --km-text-secondary: #4B5563;
+  --km-text-muted: #6B7280;
+  --km-text-light: #9CA3AF;
+  
+  /* Bordes y sombras */
+  --km-border: #E5E7EB;
+  --km-border-dark: #D1D5DB;
+  
+  /* Gradientes y efectos */
+  --km-gradient-btn: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+  --km-gradient-btn-hover: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  --km-gradient-dark: linear-gradient(180deg, #1A1A1A 0%, #0F0F0F 100%);
+  
+  /* Sombras */
+  --km-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --km-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --km-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --km-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --km-shadow-red: 0 4px 14px rgba(220, 38, 38, 0.35);
+  --km-shadow-red-lg: 0 8px 25px rgba(220, 38, 38, 0.4);
+  
+  /* Transiciones */
+  --km-transition: 0.2s ease;
+  --km-transition-fast: 0.15s ease;
 }

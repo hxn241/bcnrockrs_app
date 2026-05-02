@@ -1,24 +1,25 @@
 .profile-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 14, 12, 0.55);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 2000;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: 24px 16px;
   overflow-y: auto;
+  backdrop-filter: blur(4px);
 }
 
 .profile-modal {
-  background: var(--bcn-cream-warm);
-  border-radius: 14px;
-  border: 1px solid rgba(26, 24, 20, 0.12);
-  box-shadow: var(--bcn-shadow);
+  background: var(--km-white);
+  border-radius: 12px;
+  border: 1px solid var(--km-border);
+  box-shadow: var(--km-shadow-lg);
   width: 100%;
-  max-width: 420px;
+  max-width: 400px;
   margin-top: min(10vh, 64px);
-  padding: 20px 20px 22px;
+  padding: 24px;
 }
 
 .profile-modal-header {
@@ -26,34 +27,35 @@
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .profile-modal-header h2 {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--bcn-text);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--km-text);
 }
 
 .profile-modal-close {
   background: transparent;
   border: none;
-  font-size: 1.25rem;
+  font-size: 20px;
   line-height: 1;
   cursor: pointer;
-  color: var(--bcn-text-muted);
+  color: var(--km-gray);
   padding: 4px 8px;
+  transition: color var(--km-transition);
 }
 
 .profile-modal-close:hover {
-  color: var(--bcn-text);
+  color: var(--km-text);
 }
 
 .profile-modal-hint {
-  margin: 0 0 14px;
-  font-size: 0.88rem;
-  color: var(--bcn-text-muted);
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--km-text-muted);
 }
 
 .profile-modal-form .form-group {
@@ -62,51 +64,70 @@
 
 .profile-modal-form label {
   display: block;
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: 500;
+  font-size: 13px;
   margin-bottom: 6px;
-  color: var(--bcn-text);
+  color: var(--km-text);
 }
 
 .profile-modal-form input {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(26, 24, 20, 0.18);
-  font-size: 15px;
+  border-radius: 6px;
+  border: 1px solid var(--km-border);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color var(--km-transition);
+}
+
+.profile-modal-form input:focus {
+  outline: none;
+  border-color: var(--km-red);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
 }
 
 .profile-modal-actions {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
-  margin-top: 18px;
+  margin-top: 20px;
 }
 
 .btn-secondary-profile,
 .btn-primary-profile {
   padding: 10px 18px;
-  border-radius: 8px;
-  font-weight: 700;
+  border-radius: 6px;
+  font-weight: 600;
   font-size: 14px;
   cursor: pointer;
   border: none;
+  transition: all var(--km-transition);
 }
 
 .btn-secondary-profile {
   background: transparent;
-  border: 2px solid rgba(26, 24, 20, 0.15);
-  color: var(--bcn-text-muted);
+  border: 1px solid var(--km-border);
+  color: var(--km-text-muted);
+}
+
+.btn-secondary-profile:hover:not(:disabled) {
+  border-color: var(--km-gray);
 }
 
 .btn-primary-profile {
-  background: var(--bcn-gradient-btn);
-  color: #fff;
+  background: var(--km-gradient-btn);
+  color: var(--km-white);
+  box-shadow: var(--km-shadow-red);
+}
+
+.btn-primary-profile:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--km-shadow-red-lg);
 }
 
 .btn-primary-profile:disabled,
 .btn-secondary-profile:disabled {
-  opacity: 0.65;
+  opacity: 0.5;
   cursor: not-allowed;
 }

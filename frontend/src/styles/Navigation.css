@@ -1,10 +1,9 @@
 .navigation {
-  background: var(--bcn-charcoal);
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+  background: var(--km-gradient-dark);
   position: sticky;
   top: 0;
   z-index: 1000;
-  border-bottom: 3px solid var(--bcn-terracotta-bright);
+  border-bottom: 2px solid var(--km-red);
   width: 100%;
   max-width: 100vw;
   overflow-x: clip;
@@ -15,11 +14,11 @@
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 24px;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 72px;
+  min-height: 64px;
   min-width: 0;
   box-sizing: border-box;
 }
@@ -27,7 +26,7 @@
 .nav-menu {
   display: flex;
   list-style: none;
-  gap: 8px 22px;
+  gap: 8px 28px;
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
@@ -36,78 +35,79 @@
 }
 
 .nav-menu a {
-  color: var(--bcn-cream);
+  color: var(--km-gray-pale);
   text-decoration: none;
   font-weight: 500;
-  font-size: 15px;
-  padding: 6px 4px;
+  font-size: 14px;
+  padding: 8px 4px;
   border-bottom: 2px solid transparent;
-  transition: color 0.2s, border-color 0.2s;
+  transition: color var(--km-transition), border-color var(--km-transition);
+  letter-spacing: 0.01em;
 }
 
 .nav-menu a:hover {
-  color: #fff;
-  border-bottom-color: var(--bcn-terracotta-bright);
+  color: var(--km-white);
+  border-bottom-color: var(--km-red);
 }
 
 .user-info {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--bcn-cream);
+  color: var(--km-gray-pale);
   font-size: 14px;
 }
 
 .nav-user-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: var(--bcn-cream-warm);
-  font-weight: 600;
-  font-size: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--km-white);
+  font-weight: 500;
+  font-size: 13px;
   font-family: inherit;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  max-width: 200px;
+  max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: background 0.2s, border-color 0.2s;
+  transition: all var(--km-transition);
 }
 
 .nav-user-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: var(--bcn-terracotta-bright);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--km-red);
 }
 
 .admin-badge {
-  background: var(--bcn-terracotta-bright);
-  color: var(--bcn-cream-warm);
+  background: var(--km-red);
+  color: var(--km-white);
   padding: 2px 8px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
 .logout-btn {
-  background: var(--bcn-gradient-btn);
-  color: #fff;
+  background: var(--km-gradient-btn);
+  color: var(--km-white);
   border: none;
-  padding: 9px 16px;
+  padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 700;
-  font-size: 14px;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  font-size: 13px;
+  transition: all var(--km-transition);
+  box-shadow: var(--km-shadow-red);
 }
 
 .logout-btn:hover {
   transform: translateY(-1px);
-  background: var(--bcn-gradient-btn-hover);
-  box-shadow: var(--bcn-glow-terracotta);
+  background: var(--km-gradient-btn-hover);
+  box-shadow: var(--km-shadow-red-lg);
 }
 
 @media (max-width: 768px) {
@@ -122,19 +122,19 @@
   .nav-menu {
     width: 100%;
     justify-content: center;
-    gap: 8px 10px;
+    gap: 6px;
   }
 
   .nav-menu a {
-    font-size: 13px;
-    padding: 8px 10px;
-    background: var(--bcn-charcoal-soft);
+    font-size: 12px;
+    padding: 8px 12px;
+    background: var(--km-charcoal);
     border-radius: 6px;
     border-bottom: none;
   }
 
   .nav-menu a:hover {
-    background: var(--bcn-terracotta-bright);
-    color: #fff;
+    background: var(--km-red);
+    color: var(--km-white);
   }
 }
