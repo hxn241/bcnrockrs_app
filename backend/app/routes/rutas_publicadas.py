@@ -66,6 +66,7 @@ def _foto_to_response(row: RutaPublicadaFoto, user_obj: User | None = None) -> R
 def _organizador_o_creador_grupo_puede_gestionar(
     db: Session, route: RutaPublicada, current_user: User
 ) -> bool:
+    """Salida abierta: solo el organizador (más admins en _can_edit). Salida de grupo: organizador o creador del grupo."""
     if current_user.id == route.organizador_id:
         return True
     if route.visibilidad == "grupo" and route.grupo_id is not None:
@@ -76,7 +77,7 @@ def _organizador_o_creador_grupo_puede_gestionar(
 
 
 def _can_edit_published_route(db: Session, route: RutaPublicada, current_user: User) -> bool:
-    """Organizador, creador del grupo (salidas de grupo) o administrador pueden editar o despublicar la salida."""
+    """Editar/despublicar: administrador; el organizador de la salida; si es salida de grupo, también el creador del grupo."""
     if current_user.is_admin is True:
         return True
     return _organizador_o_creador_grupo_puede_gestionar(db, route, current_user)

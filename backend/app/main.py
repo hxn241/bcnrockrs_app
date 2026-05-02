@@ -45,7 +45,7 @@ app.mount("/uploads", StaticFiles(directory=str(_upload_dir)), name="uploads")
 @app.get("/")
 def read_root():
     return {
-        "message": "Welcome to BCN Rockers Routes API",
+        "message": "Welcome to KurveMaster API",
         "docs": "/docs",
         "api": {
             "auth": "/auth",

@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "bcnrockrsapp",
+  "name": "kurvemaster-app",
   "workspaces": [
     "frontend",
     "packages/*"

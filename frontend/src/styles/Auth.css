@@ -13,7 +13,7 @@
   border-radius: 16px;
   padding: 36px 40px;
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
   box-shadow: var(--bcn-shadow);
   border: 1px solid var(--bcn-border);
 }
@@ -24,13 +24,21 @@
 }
 
 .auth-logo {
-  width: min(220px, 72vw);
+  width: auto;
+  max-width: 100%;
   height: auto;
+  max-height: min(240px, 38vh);
   display: block;
   margin: 0 auto 12px;
-  border-radius: 50%;
-  box-shadow: 0 8px 32px rgba(42, 36, 32, 0.2);
-  border: 3px solid var(--bcn-border);
+  padding: 14px 22px;
+  border-radius: 14px;
+  object-fit: contain;
+  box-sizing: border-box;
+  background: var(--bcn-charcoal);
+  border: 2px solid var(--bcn-terracotta-mid);
+  box-shadow:
+    0 4px 24px rgba(42, 36, 32, 0.18),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
 }
 
 .auth-tagline {

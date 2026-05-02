@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     ]
     
     # App
-    app_name: str = "BCN Rockers Routes API"
+    app_name: str = "KurveMaster API"
     debug: bool = True
 
     # Google Maps

@@ -37,7 +37,7 @@ function usuarioEsAdminApp(user) {
 
 function mismoOrganizadorSalida(user, route) {
   const uid = user?.id
-  const oid = route?.organizador_id
+  const oid = route?.organizador_id ?? route?.organizador?.id
   if (uid == null || oid == null) return false
   return Number(uid) === Number(oid)
 }
@@ -79,8 +79,8 @@ export default function RouteDetailModal({
       mismoOrganizadorSalida(user, route) ||
       esCreadorGrupoSalida)
 
-  const showDeleteButton =
-    canManageRoute && (historico ? salidaPasada : !salidaPasada)
+  /** Organizador, líder de grupo (salida de grupo) o admin: pueden despublicar siempre que el backend lo permita (sin depender del reloj local vs servidor). */
+  const showDeleteButton = canManageRoute
 
   const meetingUrl = route.link_encuentro_personalizado || route.ruta?.link_encuentro
   const meetLabel = route.link_encuentro_personalizado

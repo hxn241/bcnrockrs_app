@@ -158,7 +158,7 @@ export default function Dashboard() {
         ) : routes.length === 0 ? (
           <div className="no-routes">
             <p>No hay rutas publicadas en este momento</p>
-            <button onClick={() => navigate('/calendario')}>Ver calendario</button>
+            <button onClick={() => navigate('/calendario')}>Publica una ruta</button>
           </div>
         ) : (
           <div className="routes-by-month">

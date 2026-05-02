@@ -17,82 +17,11 @@
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   min-height: 72px;
   min-width: 0;
   box-sizing: border-box;
-}
-
-.nav-logo {
-  display: flex;
-  align-items: center;
-}
-
-.nav-logo-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  color: inherit;
-  transition: opacity 0.2s, filter 0.2s;
-}
-
-.nav-logo-link:hover {
-  opacity: 0.95;
-}
-
-.nav-logo-link:hover .nav-brand-panel {
-  filter: brightness(1.05);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.nav-logo-img {
-  width: 52px;
-  height: 52px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 2px solid rgba(217, 123, 60, 0.5);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-  flex-shrink: 0;
-}
-
-/* Texto como en el logo: bloque crema, titular grueso + lema (horizontal a la derecha del icono) */
-.nav-brand-panel {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 3px;
-  padding: 5px 12px 6px;
-  background: linear-gradient(165deg, #faf4e8 0%, #ede4d3 55%, #e5dcc8 100%);
-  border-radius: 6px;
-  border: 1px solid rgba(26, 24, 20, 0.12);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.55),
-    0 2px 6px rgba(0, 0, 0, 0.25);
-}
-
-.nav-brand-title {
-  font-family: 'Arial Black', 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
-  font-weight: 900;
-  font-size: 0.95rem;
-  line-height: 1.05;
-  letter-spacing: 0.06em;
-  color: #1a1814;
-  text-transform: uppercase;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
-}
-
-.nav-brand-tagline {
-  font-size: 0.56rem;
-  line-height: 1.2;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  color: #1a1814;
-  text-transform: uppercase;
-  max-width: 12rem;
-  opacity: 0.92;
 }
 
 .nav-menu {
@@ -101,7 +30,9 @@
   gap: 8px 22px;
   align-items: center;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-menu a {
@@ -185,25 +116,7 @@
     padding: 12px 16px;
     flex-wrap: wrap;
     gap: 12px;
-  }
-
-  .nav-brand-title {
-    font-size: 0.82rem;
-  }
-
-  .nav-brand-tagline {
-    font-size: 0.5rem;
-    max-width: 9rem;
-    letter-spacing: 0.1em;
-  }
-
-  .nav-brand-panel {
-    padding: 4px 8px 5px;
-  }
-
-  .nav-logo-img {
-    width: 44px;
-    height: 44px;
+    justify-content: center;
   }
 
   .nav-menu {
