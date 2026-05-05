@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     uploads_dir: str = str(_BACKEND_ROOT / "uploads")
     max_upload_mb: int = 8
 
+    # Plantillas de ruta en catálogo (POST /rutas) por usuario no administrador
+    max_rutas_plantilla_por_usuario: int = 10
+
     class Config:
         env_file = ".env"
 

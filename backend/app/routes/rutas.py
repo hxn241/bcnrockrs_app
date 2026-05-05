@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -85,6 +86,26 @@ def create_route(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    if not current_user.is_admin:
+        limite = max(0, settings.max_rutas_plantilla_por_usuario)
+        ya = (
+            db.query(func.count(Ruta.id))
+            .filter(
+                Ruta.creador_id == current_user.id,
+                Ruta.marcada_eliminacion.is_(False),
+            )
+            .scalar()
+        )
+        if ya >= limite:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Límite de plantillas activas alcanzado ({limite} por usuario). "
+                    "Marca una para eliminación, crea otra cuando un administrador la retire del catálogo, "
+                    "o pide más huecos a un administrador."
+                ),
+            )
+
     data = ruta.model_dump()
     new_route = Ruta(**data, creador_id=current_user.id)
     new_route.embed_recorrido_url = compute_route_embed_url(new_route.link_ruta)
@@ -164,6 +185,30 @@ def desmarcar_ruta_para_eliminacion(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Solo el creador de la plantilla o un administrador pueden quitar la marca.",
         )
+    if (
+        not current_user.is_admin
+        and es_creador
+        and route.marcada_eliminacion
+        and route.creador_id is not None
+    ):
+        limite = max(0, settings.max_rutas_plantilla_por_usuario)
+        ya = (
+            db.query(func.count(Ruta.id))
+            .filter(
+                Ruta.creador_id == route.creador_id,
+                Ruta.marcada_eliminacion.is_(False),
+            )
+            .scalar()
+        )
+        if ya >= limite:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"No puedes quitar la marca: ya tienes {limite} plantillas activas "
+                    "(el máximo permitido)."
+                ),
+            )
+
     route.marcada_eliminacion = False
     db.add(route)
     db.commit()
