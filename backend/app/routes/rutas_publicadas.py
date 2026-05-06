@@ -223,16 +223,28 @@ def publish_route(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    existing_count = db.query(RutaPublicada).filter(
-        RutaPublicada.dia_ruta == ruta_publicada.dia_ruta,
-        RutaPublicada.is_active.is_(True),
-    ).count()
-
-    if existing_count >= 5:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Maximum 5 routes per day reached",
+    if (
+        not current_user.is_admin
+        and settings.max_publicaciones_salida_por_usuario_dia > 0
+    ):
+        limite = settings.max_publicaciones_salida_por_usuario_dia
+        ya = (
+            db.query(RutaPublicada)
+            .filter(
+                RutaPublicada.organizador_id == current_user.id,
+                RutaPublicada.dia_ruta == ruta_publicada.dia_ruta,
+                RutaPublicada.is_active.is_(True),
+            )
+            .count()
         )
+        if ya >= limite:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Solo puedes tener {limite} salida(s) publicada(s) por día como organizador "
+                    f"(fecha {ruta_publicada.dia_ruta}). Despublica la actual o elige otro día."
+                ),
+            )
 
     payload = ruta_publicada.model_dump()
     if payload.get("visibilidad") == "grupo":

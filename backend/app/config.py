@@ -42,6 +42,9 @@ class Settings(BaseSettings):
     # Plantillas de ruta en catálogo (POST /rutas) por usuario no administrador
     max_rutas_plantilla_por_usuario: int = 10
 
+    # Salidas publicadas activas por día y usuario (POST /rutas-publicadas); 0 = sin límite
+    max_publicaciones_salida_por_usuario_dia: int = 1
+
     class Config:
         env_file = ".env"
 
