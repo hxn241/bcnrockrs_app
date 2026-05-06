@@ -1,0 +1,238 @@
+.route-photos-gallery {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--bcn-border, #e0d8ce);
+}
+
+.route-photos-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.route-photos-head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #1a1a1a;
+}
+
+.route-photos-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.route-photos-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.route-photos-upload-btn {
+  font-size: 0.9rem;
+  padding: 8px 14px;
+}
+
+.route-photos-edit-toggle {
+  font-size: 0.9rem;
+  padding: 8px 14px;
+  background: #fff;
+  border: 1px solid var(--bcn-border, #c9c2b8);
+  color: #4a433c;
+}
+
+.route-photos-edit-toggle-active {
+  background: rgba(139, 90, 43, 0.12);
+  border-color: #8b5a2b;
+  color: #5c3d1f;
+}
+
+.route-photos-hint {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  color: #6a625a;
+}
+
+.route-photos-error {
+  margin-bottom: 12px;
+}
+
+.route-photos-loading,
+.route-photos-empty {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #5c534a;
+}
+
+.route-photos-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 10px;
+}
+
+.route-photos-item {
+  margin: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--bcn-border, #e0d8ce);
+  background: #fff;
+}
+
+.route-photos-thumb {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  cursor: zoom-in;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #eee;
+}
+
+.route-photos-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  vertical-align: middle;
+  transition: transform 0.2s ease;
+}
+
+.route-photos-thumb:hover img {
+  transform: scale(1.04);
+}
+
+.route-photos-caption {
+  padding: 6px 6px 8px;
+  font-size: 0.68rem;
+  color: #666;
+  text-align: center;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-photos-edit-row {
+  padding: 6px;
+}
+
+.route-photos-quitar-btn {
+  width: 100%;
+  font-size: 0.72rem;
+  padding: 6px 8px;
+  border: 1px solid #d4a59a;
+  border-radius: 6px;
+  background: #fff8f6;
+  color: #8b3a2f;
+  cursor: pointer;
+}
+
+.route-photos-quitar-btn:hover {
+  background: #ffeae5;
+}
+
+/* Lightbox por encima del modal de detalle (PublishRoute ~2000, GoogleMapsInfo ~3000) */
+.route-photos-lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 5000;
+  background: rgba(12, 10, 8, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 48px 12px 56px;
+  box-sizing: border-box;
+}
+
+.route-photos-lightbox-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.route-photos-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.route-photos-lightbox-arrow {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 4px;
+}
+
+.route-photos-lightbox-arrow:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.route-photos-lightbox-stage {
+  flex: 1;
+  max-width: min(92vw, 900px);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.route-photos-lightbox-img {
+  max-width: 100%;
+  max-height: calc(85vh - 48px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
+}
+
+.route-photos-lightbox-meta {
+  margin: 0;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .route-photos-lightbox-arrow {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+  }
+
+  .route-photos-lightbox-backdrop {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}

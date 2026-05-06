@@ -1,8 +1,12 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 from app.config import settings
 from app.database import init_db
-from app.routes import auth_router, rutas_router, rutas_publicadas_router
+from app.routes import auth_router, rutas_router, rutas_publicadas_router, grupos_router
 from app.routes.maps import router as maps_router
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
@@ -31,17 +35,23 @@ def startup():
 app.include_router(auth_router)
 app.include_router(rutas_router)
 app.include_router(rutas_publicadas_router)
+app.include_router(grupos_router)
 app.include_router(maps_router)
+
+_upload_dir = Path(settings.uploads_dir)
+_upload_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(_upload_dir)), name="uploads")
 
 @app.get("/")
 def read_root():
     return {
-        "message": "Welcome to BCN Rockers Routes API",
+        "message": "Welcome to KurveMaster API",
         "docs": "/docs",
         "api": {
             "auth": "/auth",
             "rutas": "/rutas",
-            "rutas_publicadas": "/rutas-publicadas"
+            "rutas_publicadas": "/rutas-publicadas",
+            "grupos": "/grupos"
         }
     }
 

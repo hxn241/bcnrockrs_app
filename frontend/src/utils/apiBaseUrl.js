@@ -27,3 +27,12 @@ export function getApiBaseUrl() {
     return base
   }
 }
+
+/** URL absoluta para ficheros servidos bajo `/uploads` en el API (p. ej. fotos de rutas). */
+export function resolveUploadUrl(path) {
+  if (!path) return ''
+  if (/^https?:\/\//i.test(path)) return path
+  const base = getApiBaseUrl().replace(/\/$/, '')
+  const p = path.startsWith('/') ? path : `/${path}`
+  return `${base}${p}`
+}

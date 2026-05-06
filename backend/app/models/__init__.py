@@ -1,3 +1,23 @@
-from .models import Base, User, Ruta, RutaPublicada, Asistente
+from .models import (
+    Base,
+    User,
+    Ruta,
+    RutaPublicada,
+    Asistente,
+    RutaPublicadaFoto,
+    Grupo,
+    GrupoMiembro,
+    GrupoSolicitud,
+)
 
-__all__ = ["Base", "User", "Ruta", "RutaPublicada", "Asistente"]
+__all__ = [
+    "Base",
+    "User",
+    "Ruta",
+    "RutaPublicada",
+    "Asistente",
+    "RutaPublicadaFoto",
+    "Grupo",
+    "GrupoMiembro",
+    "GrupoSolicitud",
+]

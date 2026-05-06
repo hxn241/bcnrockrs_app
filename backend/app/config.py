@@ -1,5 +1,9 @@
+from pathlib import Path
 from pydantic_settings import BaseSettings
 from typing import Optional
+
+_BACKEND_ROOT = Path(__file__).resolve().parent.parent
+
 
 class Settings(BaseSettings):
     # Database
@@ -25,11 +29,21 @@ class Settings(BaseSettings):
     ]
     
     # App
-    app_name: str = "BCN Rockers Routes API"
+    app_name: str = "KurveMaster API"
     debug: bool = True
 
     # Google Maps
     google_maps_api_key: str = ""
+
+    # Subidas (fotos de rutas pasadas)
+    uploads_dir: str = str(_BACKEND_ROOT / "uploads")
+    max_upload_mb: int = 8
+
+    # Plantillas de ruta en catálogo (POST /rutas) por usuario no administrador
+    max_rutas_plantilla_por_usuario: int = 10
+
+    # Salidas publicadas activas por día y usuario (POST /rutas-publicadas); 0 = sin límite
+    max_publicaciones_salida_por_usuario_dia: int = 1
 
     class Config:
         env_file = ".env"

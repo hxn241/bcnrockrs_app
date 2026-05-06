@@ -5,8 +5,10 @@
 }
 
 .container {
+  width: 100%;
   max-width: 1000px;
   margin: 0 auto;
+  min-width: 0;
 }
 
 /* Título de página: centrado + acento terracota horizontal (tema BCN) */
@@ -46,6 +48,106 @@
   max-width: 36rem;
   margin-left: auto;
   margin-right: auto;
+}
+
+.dashboard-filtros-zona {
+  margin: 0 auto 28px;
+  max-width: 640px;
+  padding: 16px 18px;
+  background: var(--bcn-cream-warm);
+  border-radius: 12px;
+  border: 1px solid rgba(26, 24, 20, 0.1);
+  box-shadow: var(--bcn-shadow);
+}
+
+.dashboard-filtros-zona-title {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bcn-text-muted);
+}
+
+.dashboard-filtros-zona-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.dashboard-filtros-zona-grid label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--bcn-text);
+}
+
+.dashboard-filtros-zona-grid input,
+.dashboard-filtros-zona-grid select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(26, 24, 20, 0.18);
+  font-size: 14px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.dashboard-filtros-zona-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dashboard-filtros-zona-actions button {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.dashboard-filtros-aplicar {
+  background: var(--bcn-gradient-btn);
+  color: #fff;
+}
+
+.dashboard-filtros-limpiar {
+  background: transparent;
+  color: var(--bcn-text);
+  border: 2px solid rgba(26, 24, 20, 0.15);
+}
+
+.route-ubicacion-line {
+  font-size: 0.82rem;
+  color: var(--bcn-text-muted);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.route-salida-visibilidad {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.route-salida-visibilidad.abierta {
+  background: rgba(40, 167, 69, 0.18);
+  color: #1e5f2f;
+}
+
+.route-salida-visibilidad.grupo {
+  background: rgba(217, 123, 60, 0.22);
+  color: var(--bcn-terracotta-deep);
 }
 
 .routes-by-month {

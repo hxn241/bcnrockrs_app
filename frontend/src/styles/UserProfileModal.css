@@ -1,0 +1,112 @@
+.profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 14, 12, 0.55);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 16px;
+  overflow-y: auto;
+}
+
+.profile-modal {
+  background: var(--bcn-cream-warm);
+  border-radius: 14px;
+  border: 1px solid rgba(26, 24, 20, 0.12);
+  box-shadow: var(--bcn-shadow);
+  width: 100%;
+  max-width: 420px;
+  margin-top: min(10vh, 64px);
+  padding: 20px 20px 22px;
+}
+
+.profile-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.profile-modal-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--bcn-text);
+}
+
+.profile-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--bcn-text-muted);
+  padding: 4px 8px;
+}
+
+.profile-modal-close:hover {
+  color: var(--bcn-text);
+}
+
+.profile-modal-hint {
+  margin: 0 0 14px;
+  font-size: 0.88rem;
+  color: var(--bcn-text-muted);
+}
+
+.profile-modal-form .form-group {
+  margin-bottom: 14px;
+}
+
+.profile-modal-form label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  color: var(--bcn-text);
+}
+
+.profile-modal-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(26, 24, 20, 0.18);
+  font-size: 15px;
+}
+
+.profile-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.btn-secondary-profile,
+.btn-primary-profile {
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-secondary-profile {
+  background: transparent;
+  border: 2px solid rgba(26, 24, 20, 0.15);
+  color: var(--bcn-text-muted);
+}
+
+.btn-primary-profile {
+  background: var(--bcn-gradient-btn);
+  color: #fff;
+}
+
+.btn-primary-profile:disabled,
+.btn-secondary-profile:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

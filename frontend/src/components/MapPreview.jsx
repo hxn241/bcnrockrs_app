@@ -1,5 +1,5 @@
 import GoogleMapEmbed from './GoogleMapEmbed'
 
-export default function MapPreview({ url, title }) {
-  return <GoogleMapEmbed url={url} title={title} />
+export default function MapPreview({ url, embedUrl, title }) {
+  return <GoogleMapEmbed url={url} embedUrl={embedUrl} title={title} />
 }

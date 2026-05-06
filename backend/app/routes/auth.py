@@ -2,11 +2,31 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
-from app.schemas import UserCreate, UserResponse, UserLogin
-from app.auth import hash_password, verify_password, create_access_token
+from app.schemas import UserCreate, UserResponse, UserLogin, UserUpdateMe
+from app.auth import hash_password, verify_password, create_access_token, get_current_user
 from datetime import timedelta
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+@router.get("/me", response_model=UserResponse)
+def read_me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.patch("/me", response_model=UserResponse)
+def update_me(
+    body: UserUpdateMe,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    data = body.model_dump(exclude_unset=True)
+    for key, value in data.items():
+        setattr(current_user, key, value)
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
 
 @router.post("/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
@@ -64,5 +84,5 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     return {
         "access_token": str(access_token) if not isinstance(access_token, str) else access_token,
         "token_type": "bearer",
-        "user": UserResponse.from_orm(db_user)
+        "user": UserResponse.model_validate(db_user)
     }

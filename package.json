@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "name": "kurvemaster-app",
+  "workspaces": [
+    "frontend",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w frontend",
+    "build": "npm run build -w frontend",
+    "preview": "npm run preview -w frontend"
+  }
+}

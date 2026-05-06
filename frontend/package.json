@@ -1,5 +1,5 @@
 {
-  "name": "bcn-rockers-routes",
+  "name": "kurvemaster-frontend",
   "version": "0.1.0",
   "type": "module",
   "scripts": {
@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@bcnrockrs/shared": "*",
     "axios": "^1.6.0",
     "date-fns": "^2.30.0",
     "leaflet": "^1.9.4",

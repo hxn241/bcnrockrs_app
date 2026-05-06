@@ -55,9 +55,86 @@
   text-underline-offset: 2px;
 }
 
+.catalogo-rutas-row-pendiente {
+  background: rgba(180, 40, 40, 0.06);
+}
+
+.catalogo-rutas-badge-pendiente {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(180, 40, 40, 0.12);
+  color: #922;
+}
+
+.catalogo-rutas-badge-ok {
+  color: #999;
+  font-size: 13px;
+}
+
+.catalogo-rutas-btn-marcar {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5d4037;
+  background: rgba(93, 64, 55, 0.12);
+  border: 1px solid rgba(93, 64, 55, 0.25);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.catalogo-rutas-btn-desmarcar {
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #37474f;
+  background: transparent;
+  border: 1px solid rgba(55, 71, 79, 0.28);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.catalogo-rutas-btn-marcar:disabled,
+.catalogo-rutas-btn-desmarcar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .catalogo-rutas-col-action {
-  width: 100px;
+  min-width: 280px;
+  width: 28%;
   text-align: right;
+}
+
+.catalogo-rutas-actions-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.catalogo-rutas-btn-edit {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, var(--bcn-terracotta-bright, #d97b3c) 0%, var(--bcn-terracotta, #c45e2e) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+  min-width: 76px;
+  box-shadow: 0 2px 6px rgba(196, 94, 46, 0.28);
+}
+
+.catalogo-rutas-btn-edit:hover {
+  transform: translateY(-1px);
+  opacity: 0.96;
 }
 
 .catalogo-rutas-btn-delete {
