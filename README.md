@@ -111,3 +111,4 @@ Solo existe el flag **administrador global** (`is_admin`). El **organizador** de
 ## Licencia y créditos
 
 Proyecto privado para BCN Rockers.
+.....
