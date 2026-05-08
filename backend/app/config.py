@@ -1,5 +1,5 @@
 from pathlib import Path
-from pydantic import Field
+from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List
 
@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     # Se almacena como str para evitar que pydantic-settings intente parsear JSON.
     cors_origins_raw: str = Field(default="", alias="CORS_ORIGINS")
 
+    @computed_field
     @property
     def cors_origins(self) -> List[str]:
         if self.cors_origins_raw.strip():
