@@ -6,13 +6,29 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,       # Verifica la conexión antes de usarla (importante en Render/cloud)
-    pool_size=5,              # Conexiones en el pool
-    max_overflow=10,          # Conexiones extra permitidas
-    pool_recycle=300,         # Recicla conexiones cada 5 min (evita timeouts en Render)
+
+def _postgres_connect_args(url: str) -> dict:
+    """Render Postgres exige TLS; si la URL ya lleva sslmode, no duplicar."""
+    if not url.startswith("postgresql"):
+        return {}
+    if ".render.com" not in url:
+        return {}
+    if "sslmode=" in url.lower():
+        return {}
+    return {"sslmode": "require"}
+
+
+_engine_kwargs = dict(
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+    pool_recycle=300,
 )
+_connect_args = _postgres_connect_args(settings.database_url)
+if _connect_args:
+    _engine_kwargs["connect_args"] = _connect_args
+
+engine = create_engine(settings.database_url, **_engine_kwargs)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

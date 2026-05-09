@@ -8,6 +8,7 @@ from .models import (
     Grupo,
     GrupoMiembro,
     GrupoSolicitud,
+    RutaHistorico,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "Grupo",
     "GrupoMiembro",
     "GrupoSolicitud",
+    "RutaHistorico",
 ]

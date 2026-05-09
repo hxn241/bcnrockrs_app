@@ -6,21 +6,24 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import init_db
+from app.bootstrap_admin import ensure_bootstrap_admin
 from app.routes import auth_router, rutas_router, rutas_publicadas_router, grupos_router
 from app.routes.maps import router as maps_router
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
 
-# CORS: orígenes fijos + regex para móvil/LAN (192.168.x, 10.x, 172.16–31.x) y túnel DynV6
-_CORS_LAN_DYNV6 = (
-    r"^https?://(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+# CORS: regex para LAN/DynV6 + despliegues Vercel (*.vercel.app, previews incl.)
+# Dominios personalizados en Vercel deben ir en CORS_ORIGINS en Render.
+_CORS_ORIGIN_REGEX = (
+    r"^(https?://(192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3}"
     r"|172\.(1[6-9]|2[0-9]|3[0-1])\.\d{1,3}\.\d{1,3}"
-    r"|hexen88\.dynv6\.net)(:\d+)?$"
+    r"|hexen88\.dynv6\.net)(:\d+)?"
+    r"|https://[a-zA-Z0-9.-]+\.vercel\.app)$"
 )
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_origin_regex=_CORS_LAN_DYNV6,
+    allow_origin_regex=_CORS_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,6 +33,7 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     init_db()
+    ensure_bootstrap_admin()
 
 # Include routers
 app.include_router(auth_router)

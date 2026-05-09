@@ -41,9 +41,8 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             detail="Username or email already registered"
         )
 
-    # Check if this is the first user (make them admin)
-    user_count = db.query(User).count()
-    is_admin = user_count == 0
+    # Los administradores solo vía bootstrap (env) o herramientas de gestión; la web crea usuarios normales.
+    is_admin = False
 
     # Create new user
     hashed_password = hash_password(user.password)
