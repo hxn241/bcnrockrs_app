@@ -77,11 +77,26 @@ class Settings(BaseSettings):
     uploads_dir: str = str(_BACKEND_ROOT / "uploads")
     max_upload_mb: int = 8
 
-    # Plantillas de ruta en catálogo (POST /rutas) por usuario no administrador
-    max_rutas_plantilla_por_usuario: int = 10
+    # Plantillas de ruta en catálogo (POST /rutas) por usuario no administrador; 0 = sin límite
+    max_rutas_plantilla_por_usuario: int = Field(
+        default=5,
+        ge=0,
+        alias="MAX_RUTAS_PLANTILLA_POR_USUARIO",
+    )
 
-    # Salidas publicadas activas por día y usuario (POST /rutas-publicadas); 0 = sin límite
-    max_publicaciones_salida_por_usuario_dia: int = 1
+    # Salidas publicadas activas por día de salida y organizador (POST /rutas-publicadas); 0 = sin límite
+    max_publicaciones_salida_por_usuario_dia: int = Field(
+        default=1,
+        ge=0,
+        alias="MAX_PUBLICACIONES_SALIDA_POR_USUARIO_DIA",
+    )
+
+    # Salidas activas creadas en el mes calendario actual (UTC); 0 = sin límite. No aplica a admins.
+    max_publicaciones_salida_por_usuario_mes: int = Field(
+        default=4,
+        ge=0,
+        alias="MAX_PUBLICACIONES_SALIDA_POR_USUARIO_MES",
+    )
 
 
 settings = Settings()

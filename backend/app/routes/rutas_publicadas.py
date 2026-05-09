@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import shutil
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Optional
 from uuid import uuid4
@@ -34,6 +34,18 @@ _ALLOWED_IMAGE = {
 
 def _today_iso() -> str:
     return date.today().isoformat()
+
+
+def _utc_calendar_month_bounds(now: datetime | None = None) -> tuple[datetime, datetime]:
+    """Inicio del mes UTC (naive) y primer instante del mes siguiente (exclusivo)."""
+    if now is None:
+        now = datetime.utcnow()
+    start = datetime(now.year, now.month, 1)
+    if now.month == 12:
+        end_exclusive = datetime(now.year + 1, 1, 1)
+    else:
+        end_exclusive = datetime(now.year, now.month + 1, 1)
+    return start, end_exclusive
 
 
 def _route_day_passed(dia_ruta: str) -> bool:
@@ -243,6 +255,31 @@ def publish_route(
                 detail=(
                     f"Solo puedes tener {limite} salida(s) publicada(s) por día como organizador "
                     f"(fecha {ruta_publicada.dia_ruta}). Despublica la actual o elige otro día."
+                ),
+            )
+
+    if (
+        not current_user.is_admin
+        and settings.max_publicaciones_salida_por_usuario_mes > 0
+    ):
+        mes_limite = settings.max_publicaciones_salida_por_usuario_mes
+        mes_inicio, mes_fin_excl = _utc_calendar_month_bounds()
+        ya_mes = (
+            db.query(RutaPublicada)
+            .filter(
+                RutaPublicada.organizador_id == current_user.id,
+                RutaPublicada.is_active.is_(True),
+                RutaPublicada.created_at >= mes_inicio,
+                RutaPublicada.created_at < mes_fin_excl,
+            )
+            .count()
+        )
+        if ya_mes >= mes_limite:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=(
+                    f"Límite mensual de salidas publicadas ({mes_limite} por organizador en esta beta). "
+                    "Despublica una salida activa de este mes o espera al próximo mes."
                 ),
             )
 
