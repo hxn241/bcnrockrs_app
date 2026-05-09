@@ -212,3 +212,90 @@
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.profile-preview-link-wrap {
+  margin: 0 0 18px;
+  font-size: 0.9rem;
+}
+
+.profile-preview-link-wrap a {
+  color: var(--bcn-text);
+  font-weight: 700;
+}
+
+.profile-moto-gallery-section {
+  margin-bottom: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(26, 24, 20, 0.1);
+}
+
+.profile-moto-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.profile-moto-edit-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-moto-edit-thumb {
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(26, 24, 20, 0.12);
+  background: rgba(26, 24, 20, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-moto-edit-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-moto-edit-placeholder {
+  font-size: 0.82rem;
+  color: var(--bcn-text-muted);
+}
+
+.profile-moto-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn-profile-compact {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.profile-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(26, 24, 20, 0.18);
+  font-size: 15px;
+  font-family: inherit;
+  line-height: 1.45;
+  resize: vertical;
+  min-height: 88px;
+}
+
+.profile-char-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  color: var(--bcn-text-muted);
+}
+
+@media (max-width: 520px) {
+  .profile-moto-edit-grid {
+    grid-template-columns: 1fr;
+  }
+}

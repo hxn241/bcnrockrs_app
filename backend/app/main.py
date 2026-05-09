@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import init_db
-from app.routes import auth_router, rutas_router, rutas_publicadas_router, grupos_router
+from app.routes import auth_router, rutas_router, rutas_publicadas_router, grupos_router, users_router
 from app.routes.maps import router as maps_router
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
@@ -38,6 +38,7 @@ app.include_router(auth_router)
 app.include_router(rutas_router)
 app.include_router(rutas_publicadas_router)
 app.include_router(grupos_router)
+app.include_router(users_router)
 app.include_router(maps_router)
 
 _upload_dir = Path(settings.uploads_dir)

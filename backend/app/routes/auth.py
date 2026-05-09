@@ -1,7 +1,8 @@
-from pathlib import Path
+import pathlib
+from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Path, UploadFile, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
@@ -20,12 +21,16 @@ _ALLOWED_IMAGE = {
 }
 
 
-def _uploads_root() -> Path:
-    return Path(settings.uploads_dir)
+def _uploads_root() -> pathlib.Path:
+    return pathlib.Path(settings.uploads_dir)
 
 
-def _user_avatar_dir(user_id: int) -> Path:
+def _user_avatar_dir(user_id: int) -> pathlib.Path:
     return _uploads_root() / "user_avatars" / str(user_id)
+
+
+def _user_moto_foto_dir(user_id: int) -> pathlib.Path:
+    return _uploads_root() / "user_moto_fotos" / str(user_id)
 
 
 def _remove_avatar_file(user: User) -> None:
@@ -33,6 +38,16 @@ def _remove_avatar_file(user: User) -> None:
     if not fn:
         return
     p = _user_avatar_dir(user.id) / fn
+    if p.is_file():
+        p.unlink()
+
+
+def _remove_moto_foto_at_slot(user: User, slot: int) -> None:
+    attr = f"moto_foto_{slot}_filename"
+    fn = getattr(user, attr, None)
+    if not fn:
+        return
+    p = _user_moto_foto_dir(user.id) / fn
     if p.is_file():
         p.unlink()
 
@@ -57,12 +72,7 @@ def update_me(
     return current_user
 
 
-@router.post("/me/avatar", response_model=UserResponse)
-async def upload_my_avatar(
-    file: UploadFile = File(...),
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
+async def _read_upload_image(file: UploadFile) -> tuple[str, bytes]:
     ct = (file.content_type or "").split(";")[0].strip().lower()
     ext = _ALLOWED_IMAGE.get(ct)
     if not ext:
@@ -70,7 +80,6 @@ async def upload_my_avatar(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Formato no permitido. Usa JPEG, PNG o WebP.",
         )
-
     data = await file.read()
     max_bytes = max(1, settings.max_upload_mb) * 1024 * 1024
     if len(data) > max_bytes:
@@ -78,6 +87,16 @@ async def upload_my_avatar(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Imagen demasiado grande (máx. {settings.max_upload_mb} MB).",
         )
+    return ext, data
+
+
+@router.post("/me/avatar", response_model=UserResponse)
+async def upload_my_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ext, data = await _read_upload_image(file)
 
     _remove_avatar_file(current_user)
     fname = f"{uuid4().hex}{ext}"
@@ -99,6 +118,42 @@ def delete_my_avatar(
 ):
     _remove_avatar_file(current_user)
     current_user.avatar_filename = None
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.post("/me/moto-fotos/{slot}", response_model=UserResponse)
+async def upload_my_moto_foto(
+    slot: Annotated[int, Path(ge=1, le=3)],
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ext, data = await _read_upload_image(file)
+    attr = f"moto_foto_{slot}_filename"
+    _remove_moto_foto_at_slot(current_user, slot)
+    fname = f"{uuid4().hex}{ext}"
+    dest_dir = _user_moto_foto_dir(current_user.id)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    (dest_dir / fname).write_bytes(data)
+    setattr(current_user, attr, fname)
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.delete("/me/moto-fotos/{slot}", response_model=UserResponse)
+def delete_my_moto_foto(
+    slot: Annotated[int, Path(ge=1, le=3)],
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    attr = f"moto_foto_{slot}_filename"
+    _remove_moto_foto_at_slot(current_user, slot)
+    setattr(current_user, attr, None)
     db.add(current_user)
     db.commit()
     db.refresh(current_user)

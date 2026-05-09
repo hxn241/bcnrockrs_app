@@ -33,20 +33,31 @@ engine = create_engine(settings.database_url, **_engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def _ensure_users_avatar_column() -> None:
-    """Añade avatar_filename en instalaciones antiguas sin Alembic."""
+_USER_EXTRA_COLUMNS = (
+    ("avatar_filename", "VARCHAR(255)"),
+    ("bio", "TEXT"),
+    ("moto_foto_1_filename", "VARCHAR(255)"),
+    ("moto_foto_2_filename", "VARCHAR(255)"),
+    ("moto_foto_3_filename", "VARCHAR(255)"),
+)
+
+
+def _ensure_user_extra_columns() -> None:
+    """Añade columnas opcionales de perfil en BD antiguas (sin Alembic)."""
     try:
         insp = inspect(engine)
         if not insp.has_table("users"):
             return
         cols = {c["name"] for c in insp.get_columns("users")}
-        if "avatar_filename" in cols:
+        missing = [(n, t) for n, t in _USER_EXTRA_COLUMNS if n not in cols]
+        if not missing:
             return
         with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE users ADD COLUMN avatar_filename VARCHAR(255)"))
-        logger.info("Columna users.avatar_filename añadida.")
+            for name, sql_type in missing:
+                conn.execute(text(f"ALTER TABLE users ADD COLUMN {name} {sql_type}"))
+        logger.info("Columnas users añadidas: %s", ", ".join(n for n, _ in missing))
     except Exception as e:
-        logger.warning("No se pudo añadir users.avatar_filename: %s", e)
+        logger.warning("No se pudieron añadir columnas extra en users: %s", e)
 
 
 def get_db():
@@ -66,5 +77,5 @@ def init_db():
     """
     logger.info("Inicializando base de datos PostgreSQL...")
     Base.metadata.create_all(bind=engine)
-    _ensure_users_avatar_column()
+    _ensure_user_extra_columns()
     logger.info("Base de datos inicializada correctamente.")

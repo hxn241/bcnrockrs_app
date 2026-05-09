@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import Navigation from '../components/Navigation'
 import { gruposService } from '../services/api'
@@ -423,12 +423,25 @@ export default function Grupos() {
                                   <ul className="grupos-miembros-lista">
                                     {detalle.miembros.map((m) => (
                                       <li key={m.user_id} className="grupos-miembro-fila">
-                                        <span className="grupos-miembro-nombre-wrap">
-                                          <span className="grupos-miembro-nombre">{m.username}</span>
-                                          {m.user_id === detalle.creador_id && (
-                                            <span className="grupos-badge-creador">creador</span>
+                                        <Link to={`/u/${m.user_id}`} className="grupos-miembro-link">
+                                          {m.avatar_url ? (
+                                            <img
+                                              src={resolveUploadUrl(m.avatar_url)}
+                                              alt=""
+                                              className="grupos-miembro-avatar"
+                                            />
+                                          ) : (
+                                            <span className="grupos-miembro-avatar grupos-miembro-avatar-placeholder" aria-hidden>
+                                              {(m.username || '?').slice(0, 1).toUpperCase()}
+                                            </span>
                                           )}
-                                        </span>
+                                          <span className="grupos-miembro-nombre-wrap">
+                                            <span className="grupos-miembro-nombre">{m.username}</span>
+                                            {m.user_id === detalle.creador_id && (
+                                              <span className="grupos-badge-creador">creador</span>
+                                            )}
+                                          </span>
+                                        </Link>
                                         {detalle.eres_creador && m.user_id !== detalle.creador_id && (
                                           <button
                                             type="button"
@@ -465,7 +478,20 @@ export default function Grupos() {
                                 <ul className="grupos-solicitudes-lista">
                                   {detalle.solicitudes_pendientes.map((s) => (
                                     <li key={s.user_id} className="grupos-solicitud-fila">
-                                      <span>{s.username}</span>
+                                      <Link to={`/u/${s.user_id}`} className="grupos-solicitud-user grupos-miembro-link">
+                                        {s.avatar_url ? (
+                                          <img
+                                            src={resolveUploadUrl(s.avatar_url)}
+                                            alt=""
+                                            className="grupos-miembro-avatar grupos-solicitud-avatar"
+                                          />
+                                        ) : (
+                                          <span className="grupos-miembro-avatar grupos-miembro-avatar-placeholder" aria-hidden>
+                                            {(s.username || '?').slice(0, 1).toUpperCase()}
+                                          </span>
+                                        )}
+                                        <span>{s.username}</span>
+                                      </Link>
                                       <span className="grupos-solicitud-actions">
                                         <button
                                           type="button"

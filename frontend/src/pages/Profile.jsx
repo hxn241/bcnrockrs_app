@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Navigation from '../components/Navigation'
 import { useAuth } from '../contexts/AuthContext'
 import { authService } from '../services/api'
@@ -11,15 +11,20 @@ export default function Profile() {
   const { user, logout, updateProfile, refreshUser } = useAuth()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
+  const motoFileRef = useRef(null)
 
   const [fullName, setFullName] = useState('')
   const [motoMarca, setMotoMarca] = useState('')
   const [motoModelo, setMotoModelo] = useState('')
   const [motoAnio, setMotoAnio] = useState('')
+  const [bio, setBio] = useState('')
   const [saving, setSaving] = useState(false)
   const [avatarBusy, setAvatarBusy] = useState(false)
+  const [motoSlotPicking, setMotoSlotPicking] = useState(null)
+  const [motoBusySlot, setMotoBusySlot] = useState(null)
   const [error, setError] = useState('')
   const [avatarError, setAvatarError] = useState('')
+  const [motoError, setMotoError] = useState('')
 
   useEffect(() => {
     refreshUser().catch(() => {})
@@ -31,8 +36,10 @@ export default function Profile() {
     setMotoMarca(user.moto_marca || '')
     setMotoModelo(user.moto_modelo || '')
     setMotoAnio(user.moto_anio != null ? String(user.moto_anio) : '')
+    setBio(user.bio || '')
     setError('')
     setAvatarError('')
+    setMotoError('')
   }, [user])
 
   const handleLogout = () => {
@@ -72,6 +79,45 @@ export default function Profile() {
     }
   }
 
+  const beginMotoPick = (slot) => {
+    if (motoBusySlot != null) return
+    setMotoSlotPicking(slot)
+    motoFileRef.current?.click()
+  }
+
+  const handleMotoFile = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    const slot = motoSlotPicking
+    setMotoSlotPicking(null)
+    if (!file || slot == null) return
+    setMotoBusySlot(slot)
+    setMotoError('')
+    try {
+      await authService.uploadMotoFoto(slot, file)
+      await refreshUser()
+    } catch (err) {
+      setMotoError(formatApiErrorMessage(err, 'No se pudo subir la foto de moto.'))
+    } finally {
+      setMotoBusySlot(null)
+    }
+  }
+
+  const removeMoto = async (slot) => {
+    const key = `moto_foto_${slot}_url`
+    if (!user?.[key]) return
+    setMotoBusySlot(slot)
+    setMotoError('')
+    try {
+      await authService.deleteMotoFoto(slot)
+      await refreshUser()
+    } catch (err) {
+      setMotoError(formatApiErrorMessage(err, 'No se pudo quitar la foto.'))
+    } finally {
+      setMotoBusySlot(null)
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -92,7 +138,8 @@ export default function Profile() {
         full_name: fullName.trim() || null,
         moto_marca: motoMarca.trim() || null,
         moto_modelo: motoModelo.trim() || null,
-        moto_anio
+        moto_anio,
+        bio: bio.trim() || null
       })
     } catch (err) {
       const d = err.response?.data?.detail
@@ -100,6 +147,12 @@ export default function Profile() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const motoSlotUrl = (slot) => {
+    const k = `moto_foto_${slot}_url`
+    const url = user?.[k]
+    return url ? resolveUploadUrl(url) : ''
   }
 
   return (
@@ -113,6 +166,11 @@ export default function Profile() {
             <strong>{user?.email}</strong>
             <span className="profile-hint-note"> (no editables aquí)</span>
           </p>
+          {user?.id ? (
+            <p className="profile-preview-link-wrap">
+              <Link to={`/u/${user.id}`}>Ver cómo ven tu perfil el resto de usuarios</Link>
+            </p>
+          ) : null}
 
           <section className="profile-avatar-section" aria-labelledby="profile-photo-heading">
             <h2 id="profile-photo-heading" className="profile-section-title">
@@ -161,9 +219,61 @@ export default function Profile() {
             </div>
           </section>
 
+          <section className="profile-moto-gallery-section" aria-labelledby="profile-moto-fotos-heading">
+            <h2 id="profile-moto-fotos-heading" className="profile-section-title">
+              Fotos de tus motos (hasta 3)
+            </h2>
+            {motoError && <div className="profile-alert">{motoError}</div>}
+            <input
+              ref={motoFileRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="profile-file-input"
+              onChange={handleMotoFile}
+              disabled={motoBusySlot != null}
+            />
+            <div className="profile-moto-edit-grid">
+              {[1, 2, 3].map((slot) => {
+                const src = motoSlotUrl(slot)
+                const busy = motoBusySlot === slot
+                return (
+                  <div key={slot} className="profile-moto-edit-slot">
+                    <div className="profile-moto-edit-thumb">
+                      {src ? (
+                        <img src={src} alt={`Moto ${slot}`} />
+                      ) : (
+                        <span className="profile-moto-edit-placeholder">Vacío</span>
+                      )}
+                    </div>
+                    <div className="profile-moto-edit-actions">
+                      <button
+                        type="button"
+                        className="btn-profile-secondary btn-profile-compact"
+                        disabled={busy || motoBusySlot != null}
+                        onClick={() => beginMotoPick(slot)}
+                      >
+                        {busy ? '…' : src ? 'Cambiar' : 'Subir'}
+                      </button>
+                      {src ? (
+                        <button
+                          type="button"
+                          className="btn-profile-danger btn-profile-compact"
+                          disabled={busy || motoBusySlot != null}
+                          onClick={() => removeMoto(slot)}
+                        >
+                          Quitar
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+
           <section className="profile-form-section" aria-labelledby="profile-data-heading">
             <h2 id="profile-data-heading" className="profile-section-title">
-              Datos
+              Datos y descripción
             </h2>
             {error && <div className="profile-alert">{error}</div>}
             <form onSubmit={handleSubmit} className="profile-form">
@@ -179,6 +289,20 @@ export default function Profile() {
                   disabled={saving}
                   autoComplete="name"
                 />
+              </div>
+              <div className="form-group">
+                <label htmlFor="profile-bio">Descripción (opcional)</label>
+                <textarea
+                  id="profile-bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  maxLength={600}
+                  rows={4}
+                  placeholder="Algo sobre ti, tus rutas favoritas…"
+                  disabled={saving}
+                  className="profile-textarea"
+                />
+                <span className="profile-char-hint">{bio.length}/600</span>
               </div>
               <div className="form-group">
                 <label htmlFor="profile-moto-marca">Marca de la moto</label>

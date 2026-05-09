@@ -286,6 +286,52 @@
   flex-wrap: wrap;
 }
 
+.grupos-miembro-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 8px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+}
+
+.grupos-miembro-link:hover {
+  background: rgba(204, 85, 0, 0.08);
+}
+
+.grupos-miembro-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(26, 24, 20, 0.15);
+}
+
+.grupos-miembro-avatar-placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bcn-charcoal-soft);
+  color: var(--bcn-cream-warm);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.grupos-solicitud-user {
+  flex: 1;
+  min-width: 0;
+}
+
+.grupos-solicitud-avatar {
+  width: 28px;
+  height: 28px;
+}
+
 .grupos-miembro-nombre-wrap {
   display: flex;
   align-items: center;

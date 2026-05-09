@@ -17,6 +17,10 @@ class User(Base):
     moto_modelo = Column(String(120), nullable=True)
     moto_anio = Column(Integer, nullable=True)
     avatar_filename = Column(String(255), nullable=True)
+    bio = Column(Text, nullable=True)
+    moto_foto_1_filename = Column(String(255), nullable=True)
+    moto_foto_2_filename = Column(String(255), nullable=True)
+    moto_foto_3_filename = Column(String(255), nullable=True)
     is_admin = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -25,6 +29,23 @@ class User(Base):
         if not self.avatar_filename:
             return None
         return f"/uploads/user_avatars/{self.id}/{self.avatar_filename}"
+
+    def _moto_foto_public_url(self, fn: str | None) -> str | None:
+        if not fn:
+            return None
+        return f"/uploads/user_moto_fotos/{self.id}/{fn}"
+
+    @property
+    def moto_foto_1_url(self) -> str | None:
+        return self._moto_foto_public_url(self.moto_foto_1_filename)
+
+    @property
+    def moto_foto_2_url(self) -> str | None:
+        return self._moto_foto_public_url(self.moto_foto_2_filename)
+
+    @property
+    def moto_foto_3_url(self) -> str | None:
+        return self._moto_foto_public_url(self.moto_foto_3_filename)
 
     asistentes = relationship("Asistente", back_populates="user")
     grupos_creados = relationship("Grupo", back_populates="creador")

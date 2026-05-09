@@ -1,5 +1,5 @@
 from .schemas import (
-    UserCreate, UserResponse, UserLogin, UserUpdateMe,
+    UserCreate, UserResponse, UserLogin, UserUpdateMe, UserPublicProfileResponse,
     RutaCreate, RutaResponse, RutaUpdate,
     RutaPublicadaCreate, RutaPublicadaUpdate, RutaPublicadaResponse,
     RutaPublicadaFotoResponse,
@@ -14,7 +14,7 @@ from .schemas import (
 )
 
 __all__ = [
-    "UserCreate", "UserResponse", "UserLogin", "UserUpdateMe",
+    "UserCreate", "UserResponse", "UserLogin", "UserUpdateMe", "UserPublicProfileResponse",
     "RutaCreate", "RutaResponse", "RutaUpdate",
     "RutaPublicadaCreate", "RutaPublicadaUpdate", "RutaPublicadaResponse",
     "RutaPublicadaFotoResponse",

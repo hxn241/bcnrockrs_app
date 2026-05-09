@@ -24,10 +24,19 @@ class UserUpdateMe(BaseModel):
     moto_marca: Optional[str] = None
     moto_modelo: Optional[str] = None
     moto_anio: Optional[int] = Field(None, ge=1950, le=2100)
+    bio: Optional[str] = Field(None, max_length=600)
 
     @field_validator("full_name", "moto_marca", "moto_modelo", mode="before")
     @classmethod
     def strip_optional_strings(cls, v):
+        if v is None:
+            return None
+        s = str(v).strip()
+        return s or None
+
+    @field_validator("bio", mode="before")
+    @classmethod
+    def strip_bio(cls, v):
         if v is None:
             return None
         s = str(v).strip()
@@ -42,9 +51,32 @@ class UserResponse(BaseModel):
     moto_marca: Optional[str] = None
     moto_modelo: Optional[str] = None
     moto_anio: Optional[int] = None
+    bio: Optional[str] = None
     avatar_url: Optional[str] = None
+    moto_foto_1_url: Optional[str] = None
+    moto_foto_2_url: Optional[str] = None
+    moto_foto_3_url: Optional[str] = None
     is_admin: bool
     created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class UserPublicProfileResponse(BaseModel):
+    """Perfil visible por otros usuarios logueados (sin email ni datos sensibles)."""
+
+    id: int
+    username: str
+    full_name: Optional[str] = None
+    moto_marca: Optional[str] = None
+    moto_modelo: Optional[str] = None
+    moto_anio: Optional[int] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+    moto_foto_1_url: Optional[str] = None
+    moto_foto_2_url: Optional[str] = None
+    moto_foto_3_url: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -178,6 +210,8 @@ class GrupoListaItem(BaseModel):
 class GrupoMiembroItem(BaseModel):
     user_id: int
     username: str
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -186,6 +220,8 @@ class GrupoMiembroItem(BaseModel):
 class GrupoSolicitudPendienteItem(BaseModel):
     user_id: int
     username: str
+    full_name: Optional[str] = None
+    avatar_url: Optional[str] = None
     created_at: datetime
 
     class Config:

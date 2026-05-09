@@ -61,7 +61,19 @@ function createServices(api) {
       return api.post('/auth/me/avatar', fd)
     },
 
-    deleteAvatar: () => api.delete('/auth/me/avatar')
+    deleteAvatar: () => api.delete('/auth/me/avatar'),
+
+    uploadMotoFoto: (slot, file) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return api.post(`/auth/me/moto-fotos/${slot}`, fd)
+    },
+
+    deleteMotoFoto: (slot) => api.delete(`/auth/me/moto-fotos/${slot}`)
+  }
+
+  const usersService = {
+    getPublicProfile: (userId) => api.get(`/users/${userId}/perfil`)
   }
 
   const rutasService = {
@@ -119,7 +131,7 @@ function createServices(api) {
     deleteLogo: (grupoId) => api.delete(`/grupos/${grupoId}/logo`)
   }
 
-  return { authService, rutasService, rutasPublicadasService, gruposService }
+  return { authService, rutasService, rutasPublicadasService, gruposService, usersService }
 }
 
 // ──────────────────────────────────────────────
@@ -130,7 +142,8 @@ const api = createApiClient({
   getToken: () => localStorage.getItem('token')
 })
 
-const { authService, rutasService, rutasPublicadasService, gruposService } = createServices(api)
+const { authService, rutasService, rutasPublicadasService, gruposService, usersService } =
+  createServices(api)
 
-export { authService, rutasService, rutasPublicadasService, gruposService }
+export { authService, rutasService, rutasPublicadasService, gruposService, usersService }
 export default api

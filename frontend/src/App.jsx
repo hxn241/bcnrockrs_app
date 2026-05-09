@@ -9,6 +9,7 @@ import CatalogoRutas from './pages/CatalogoRutas'
 import HistoricoRutas from './pages/HistoricoRutas'
 import Grupos from './pages/Grupos'
 import Profile from './pages/Profile'
+import PublicProfile from './pages/PublicProfile'
 import './styles/App.css'
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/grupos" element={<PrivateRoute><Grupos /></PrivateRoute>} />
           <Route path="/catalogo" element={<PrivateRoute><CatalogoRutas /></PrivateRoute>} />
           <Route path="/perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
+          <Route path="/u/:userId" element={<PrivateRoute><PublicProfile /></PrivateRoute>} />
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
         </Routes>

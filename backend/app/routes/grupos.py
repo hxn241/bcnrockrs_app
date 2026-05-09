@@ -93,7 +93,13 @@ def _build_detalle(db: Session, g: Grupo, current_user: User) -> GrupoDetalleRes
     miembros_list: list[GrupoMiembroItem] = []
     if eres_miembro or eres_creador:
         miembros_list = [
-            GrupoMiembroItem(user_id=u.id, username=u.username) for _, u in miembros_joined
+            GrupoMiembroItem(
+                user_id=u.id,
+                username=u.username,
+                full_name=u.full_name,
+                avatar_url=u.avatar_url,
+            )
+            for _, u in miembros_joined
         ]
     solicitudes_list: list[GrupoSolicitudPendienteItem] = []
     if eres_creador:
@@ -105,7 +111,13 @@ def _build_detalle(db: Session, g: Grupo, current_user: User) -> GrupoDetalleRes
             .all()
         )
         solicitudes_list = [
-            GrupoSolicitudPendienteItem(user_id=u.id, username=u.username, created_at=s.created_at)
+            GrupoSolicitudPendienteItem(
+                user_id=u.id,
+                username=u.username,
+                full_name=u.full_name,
+                avatar_url=u.avatar_url,
+                created_at=s.created_at,
+            )
             for s, u in sol_rows
         ]
     return GrupoDetalleResponse(
