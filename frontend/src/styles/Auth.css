@@ -49,6 +49,57 @@
   font-weight: 600;
 }
 
+.auth-box-login {
+  max-width: 520px;
+}
+
+.auth-login-intro {
+  margin: 0 0 18px;
+  padding: 0 6px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--bcn-text);
+  text-align: center;
+}
+
+.auth-login-intro strong {
+  font-weight: 700;
+}
+
+.auth-beta-notice {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--bcn-text);
+  background: rgba(204, 85, 0, 0.1);
+  border: 1px solid rgba(204, 85, 0, 0.28);
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 10px;
+}
+
+.auth-beta-notice-copy {
+  flex: 1;
+  min-width: min(100%, 220px);
+}
+
+.auth-beta-badge {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bcn-cream-warm);
+  background: var(--bcn-charcoal-soft);
+  border-radius: 6px;
+  vertical-align: middle;
+}
+
 .auth-box h1,
 .auth-box h2,
 .auth-card h1,
@@ -71,6 +122,7 @@
 .auth-card h2 {
   font-size: 19px;
   margin-bottom: 24px;
+  margin-top: 0;
   color: var(--bcn-text-muted);
   font-weight: 600;
 }

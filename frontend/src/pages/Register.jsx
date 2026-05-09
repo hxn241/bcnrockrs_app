@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { formatApiErrorMessage } from '../utils/apiErrorMessage'
 import logo from '../assets/kurvemaster-logo.png'
 import '../styles/Auth.css'
+import BetaNotice from '../components/BetaNotice'
 
 export default function Register() {
   const [username, setUsername] = useState('')
@@ -61,6 +62,7 @@ export default function Register() {
           <img src={logo} alt="KurveMaster" className="auth-logo" />
           <p className="auth-tagline">Ride Hard. Master Every Curve.</p>
         </div>
+        <BetaNotice />
         <h2>Crear cuenta</h2>
 
         {error && <div className="error-message">{error}</div>}

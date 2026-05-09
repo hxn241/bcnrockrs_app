@@ -2,13 +2,18 @@ import pathlib
 from typing import Annotated
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, File, HTTPException, Path, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Path, Request, UploadFile, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
 from app.schemas import UserCreate, UserResponse, UserLogin, UserUpdateMe
 from app.auth import hash_password, verify_password, create_access_token, get_current_user
 from app.config import settings
+from app.login_rate_limit import (
+    assert_login_allowed,
+    clear_login_failures,
+    record_login_failure,
+)
 from datetime import timedelta
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -195,16 +200,20 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/login")
-def login(user: UserLogin, db: Session = Depends(get_db)):
-    # Find user
+def login(user: UserLogin, request: Request, db: Session = Depends(get_db)):
+    assert_login_allowed(request, user.username)
+
     db_user = db.query(User).filter(User.username == user.username).first()
-    
+
     if not db_user or not verify_password(user.password, db_user.hashed_password):
+        record_login_failure(request, user.username)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
+            detail="Invalid username or password",
         )
-    
+
+    clear_login_failures(request, user.username)
+
     # Create token
     access_token_expires = timedelta(minutes=480)
     access_token = create_access_token(

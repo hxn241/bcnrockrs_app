@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { formatApiErrorMessage } from '../utils/apiErrorMessage'
 import logo from '../assets/kurvemaster-logo.png'
 import '../styles/Auth.css'
+import BetaNotice from '../components/BetaNotice'
+import LoginIntro from '../components/LoginIntro'
 
 export default function Login() {
   const [username, setUsername] = useState('')
@@ -30,11 +32,13 @@ export default function Login() {
 
   return (
     <div className="auth-container">
-      <div className="auth-box">
+      <div className="auth-box auth-box-login">
         <div className="auth-brand">
           <img src={logo} alt="KurveMaster" className="auth-logo" />
           <p className="auth-tagline">Ride Hard. Master Every Curve.</p>
         </div>
+        <LoginIntro />
+        <BetaNotice />
         <h2>Iniciar sesión</h2>
 
         {error && <div className="error-message">{error}</div>}

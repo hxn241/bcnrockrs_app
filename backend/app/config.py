@@ -47,6 +47,12 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
+    # Login: intentos fallidos por IP + usuario antes de 429 (memoria del proceso)
+    login_max_attempts: int = Field(default=3, ge=1, le=100, alias="LOGIN_MAX_ATTEMPTS")
+    login_attempt_window_seconds: int = Field(
+        default=900, ge=60, alias="LOGIN_ATTEMPT_WINDOW_SECONDS"
+    )
+
     # CORS
     # Sobreescribe con CORS_ORIGINS=https://tu-app.vercel.app,https://otro.com
     # Si está vacío o no definido, se usan los orígenes por defecto (_DEFAULT_CORS_ORIGINS).
