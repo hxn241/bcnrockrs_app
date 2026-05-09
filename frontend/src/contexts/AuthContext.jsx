@@ -15,12 +15,23 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    const userData = localStorage.getItem('user')
-    if (token && userData) {
-      setUser(JSON.parse(userData))
+    try {
+      const token = localStorage.getItem('token')
+      const userData = localStorage.getItem('user')
+      if (token && userData) {
+        setUser(JSON.parse(userData))
+      }
+    } catch (e) {
+      console.warn('Auth bootstrap: clearing corrupted storage', e)
+      try {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      } catch (_) {
+        /* ignore */
+      }
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   const register = async (username, email, password, fullName, motoMarca, motoModelo, motoAnio) => {

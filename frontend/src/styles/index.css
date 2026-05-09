@@ -24,6 +24,7 @@ body {
     #e5d9ca 100%
   );
   min-height: 100vh;
+  min-height: 100dvh;
   color: var(--bcn-text);
 }
 
@@ -31,6 +32,42 @@ body {
   width: 100%;
   max-width: 100vw;
   overflow-x: clip;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading-screen-root {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  min-height: 50vh;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--bcn-text);
+}
+
+.app-error-fallback {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding: 28px 20px;
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--bcn-text);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.app-error-hint {
+  font-size: 14px;
+  color: var(--bcn-text-muted);
 }
 
 .loading {
