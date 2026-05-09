@@ -1,12 +1,40 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from pathlib import Path
+from uuid import uuid4
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
 from app.schemas import UserCreate, UserResponse, UserLogin, UserUpdateMe
 from app.auth import hash_password, verify_password, create_access_token, get_current_user
+from app.config import settings
 from datetime import timedelta
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+_ALLOWED_IMAGE = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+}
+
+
+def _uploads_root() -> Path:
+    return Path(settings.uploads_dir)
+
+
+def _user_avatar_dir(user_id: int) -> Path:
+    return _uploads_root() / "user_avatars" / str(user_id)
+
+
+def _remove_avatar_file(user: User) -> None:
+    fn = getattr(user, "avatar_filename", None)
+    if not fn:
+        return
+    p = _user_avatar_dir(user.id) / fn
+    if p.is_file():
+        p.unlink()
 
 
 @router.get("/me", response_model=UserResponse)
@@ -28,6 +56,55 @@ def update_me(
     db.refresh(current_user)
     return current_user
 
+
+@router.post("/me/avatar", response_model=UserResponse)
+async def upload_my_avatar(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    ct = (file.content_type or "").split(";")[0].strip().lower()
+    ext = _ALLOWED_IMAGE.get(ct)
+    if not ext:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Formato no permitido. Usa JPEG, PNG o WebP.",
+        )
+
+    data = await file.read()
+    max_bytes = max(1, settings.max_upload_mb) * 1024 * 1024
+    if len(data) > max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Imagen demasiado grande (máx. {settings.max_upload_mb} MB).",
+        )
+
+    _remove_avatar_file(current_user)
+    fname = f"{uuid4().hex}{ext}"
+    dest_dir = _user_avatar_dir(current_user.id)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    (dest_dir / fname).write_bytes(data)
+
+    current_user.avatar_filename = fname
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
+@router.delete("/me/avatar", response_model=UserResponse)
+def delete_my_avatar(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _remove_avatar_file(current_user)
+    current_user.avatar_filename = None
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+
 @router.post("/register", response_model=UserResponse)
 def register(user: UserCreate, db: Session = Depends(get_db)):
     # Check if user exists
@@ -41,7 +118,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
             detail="Username or email already registered"
         )
 
-    # Los administradores solo vía bootstrap (env) o herramientas de gestión; la web crea usuarios normales.
+    # Los administradores solo vía herramientas de gestión (p. ej. manage_users.py); el registro web crea usuarios normales.
     is_admin = False
 
     # Create new user

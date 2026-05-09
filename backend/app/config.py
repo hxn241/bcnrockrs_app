@@ -77,10 +77,5 @@ class Settings(BaseSettings):
     # Salidas publicadas activas por día y usuario (POST /rutas-publicadas); 0 = sin límite
     max_publicaciones_salida_por_usuario_dia: int = 1
 
-    # Admin inicial (solo si usuario y email no existen aún). Contraseña solo por env; no commitear.
-    bootstrap_admin_username: str = Field(default="admin", alias="BOOTSTRAP_ADMIN_USERNAME")
-    bootstrap_admin_email: str = Field(default="", alias="BOOTSTRAP_ADMIN_EMAIL")
-    bootstrap_admin_password: str = Field(default="", alias="BOOTSTRAP_ADMIN_PASSWORD")
-
 
 settings = Settings()

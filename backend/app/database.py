@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 from app.models import Base
@@ -33,6 +33,22 @@ engine = create_engine(settings.database_url, **_engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
+def _ensure_users_avatar_column() -> None:
+    """Añade avatar_filename en instalaciones antiguas sin Alembic."""
+    try:
+        insp = inspect(engine)
+        if not insp.has_table("users"):
+            return
+        cols = {c["name"] for c in insp.get_columns("users")}
+        if "avatar_filename" in cols:
+            return
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN avatar_filename VARCHAR(255)"))
+        logger.info("Columna users.avatar_filename añadida.")
+    except Exception as e:
+        logger.warning("No se pudo añadir users.avatar_filename: %s", e)
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -50,4 +66,5 @@ def init_db():
     """
     logger.info("Inicializando base de datos PostgreSQL...")
     Base.metadata.create_all(bind=engine)
+    _ensure_users_avatar_column()
     logger.info("Base de datos inicializada correctamente.")

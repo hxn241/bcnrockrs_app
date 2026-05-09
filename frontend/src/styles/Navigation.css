@@ -58,6 +58,25 @@
   font-size: 14px;
 }
 
+.nav-menu a.nav-user-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(240px, 72vw);
+  border-bottom: none;
+  padding: 6px 12px;
+  text-decoration: none;
+}
+
+.nav-menu a.nav-user-profile-link.nav-user-btn {
+  overflow: visible;
+  max-width: min(260px, 78vw);
+}
+
+.nav-menu a.nav-user-profile-link:hover {
+  border-bottom: none;
+}
+
 .nav-user-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.18);
@@ -79,6 +98,21 @@
   background: rgba(255, 255, 255, 0.14);
   border-color: var(--bcn-terracotta-bright);
   color: #fff;
+}
+
+.nav-user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.nav-user-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-badge {

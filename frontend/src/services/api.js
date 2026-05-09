@@ -53,7 +53,15 @@ function createServices(api) {
 
     getMe: () => api.get('/auth/me'),
 
-    updateMe: (body) => api.patch('/auth/me', body)
+    updateMe: (body) => api.patch('/auth/me', body),
+
+    uploadAvatar: (file) => {
+      const fd = new FormData()
+      fd.append('file', file)
+      return api.post('/auth/me/avatar', fd)
+    },
+
+    deleteAvatar: () => api.delete('/auth/me/avatar')
   }
 
   const rutasService = {

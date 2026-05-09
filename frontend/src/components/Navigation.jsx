@@ -1,11 +1,10 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import UserProfileModal from './UserProfileModal'
+import { resolveUploadUrl } from '../utils/apiBaseUrl'
 import '../styles/Navigation.css'
 
 export default function Navigation({ user, onLogout }) {
-  const [profileOpen, setProfileOpen] = useState(false)
   const displayName = user?.full_name?.trim() || user?.username || 'Usuario'
+  const avatarSrc = user?.avatar_url ? resolveUploadUrl(user.avatar_url) : ''
 
   return (
     <nav className="navigation">
@@ -27,14 +26,16 @@ export default function Navigation({ user, onLogout }) {
             <Link to="/catalogo">Catálogo de rutas</Link>
           </li>
           <li className="user-info">
-            <button
-              type="button"
-              className="nav-user-btn"
-              onClick={() => setProfileOpen(true)}
-              title="Editar nombre y datos de la moto"
+            <Link
+              to="/perfil"
+              className="nav-user-btn nav-user-profile-link"
+              title="Mi perfil"
             >
-              {displayName}
-            </button>
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="" className="nav-user-avatar" />
+              ) : null}
+              <span className="nav-user-label">{displayName}</span>
+            </Link>
           </li>
           <li>
             <button className="logout-btn" onClick={onLogout}>
@@ -43,7 +44,6 @@ export default function Navigation({ user, onLogout }) {
           </li>
         </ul>
       </div>
-      <UserProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </nav>
   )
 }

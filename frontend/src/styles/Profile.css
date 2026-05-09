@@ -1,0 +1,214 @@
+.profile-page {
+  min-height: 100vh;
+  background: linear-gradient(165deg, var(--bcn-cream-warm) 0%, #ebe6dc 100%);
+}
+
+.profile-main {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px 20px 48px;
+  box-sizing: border-box;
+}
+
+.profile-card {
+  background: var(--bcn-cream-warm);
+  border-radius: 16px;
+  border: 1px solid rgba(26, 24, 20, 0.12);
+  box-shadow: var(--bcn-shadow);
+  padding: 26px 24px 30px;
+}
+
+.profile-title {
+  margin: 0 0 10px;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--bcn-text);
+}
+
+.profile-hint {
+  margin: 0 0 22px;
+  font-size: 0.9rem;
+  color: var(--bcn-text-muted);
+  line-height: 1.45;
+}
+
+.profile-hint-note {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.82rem;
+  opacity: 0.9;
+}
+
+.profile-section-title {
+  margin: 0 0 14px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--bcn-text);
+}
+
+.profile-avatar-section {
+  margin-bottom: 28px;
+  padding-bottom: 26px;
+  border-bottom: 1px solid rgba(26, 24, 20, 0.1);
+}
+
+.profile-avatar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.profile-avatar-preview {
+  flex-shrink: 0;
+}
+
+.profile-avatar-img {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(26, 24, 20, 0.12);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.profile-avatar-placeholder {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: var(--bcn-charcoal-soft);
+  color: var(--bcn-cream-warm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.25rem;
+  font-weight: 800;
+  border: 3px solid rgba(26, 24, 20, 0.12);
+}
+
+.profile-avatar-actions {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.profile-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.profile-avatar-help {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--bcn-text-muted);
+  line-height: 1.4;
+}
+
+.profile-alert {
+  background: rgba(180, 48, 42, 0.1);
+  border: 1px solid rgba(180, 48, 42, 0.35);
+  color: #7c2420;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  margin-bottom: 12px;
+}
+
+.profile-form .form-group {
+  margin-bottom: 14px;
+}
+
+.profile-form label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+  color: var(--bcn-text);
+}
+
+.profile-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(26, 24, 20, 0.18);
+  font-size: 15px;
+}
+
+.profile-form-actions {
+  margin-top: 18px;
+}
+
+.btn-profile-primary {
+  background: var(--bcn-gradient-btn);
+  color: #fff;
+  border: none;
+  padding: 11px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-profile-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--bcn-glow-terracotta);
+}
+
+.btn-profile-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-profile-secondary {
+  background: rgba(26, 24, 20, 0.06);
+  border: 1px solid rgba(26, 24, 20, 0.2);
+  color: var(--bcn-text);
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.btn-profile-secondary:hover:not(:disabled) {
+  background: rgba(26, 24, 20, 0.1);
+}
+
+.btn-profile-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-profile-danger {
+  background: transparent;
+  border: 1px solid rgba(180, 48, 42, 0.45);
+  color: #a3322c;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.btn-profile-danger:hover:not(:disabled) {
+  background: rgba(180, 48, 42, 0.08);
+}
+
+.btn-profile-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

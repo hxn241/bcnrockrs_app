@@ -64,17 +64,17 @@ export const AuthProvider = ({ children }) => {
     setUser(null)
   }
 
-  const updateProfile = async (payload) => {
+  const updateProfile = useCallback(async (payload) => {
     const response = await authService.updateMe(payload)
     persistUser(response.data)
     return response.data
-  }
+  }, [persistUser])
 
-  const refreshUser = async () => {
+  const refreshUser = useCallback(async () => {
     const response = await authService.getMe()
     persistUser(response.data)
     return response.data
-  }
+  }, [persistUser])
 
   return (
     <AuthContext.Provider

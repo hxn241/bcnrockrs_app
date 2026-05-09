@@ -42,9 +42,10 @@ class UserResponse(BaseModel):
     moto_marca: Optional[str] = None
     moto_modelo: Optional[str] = None
     moto_anio: Optional[int] = None
+    avatar_url: Optional[str] = None
     is_admin: bool
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 

@@ -6,7 +6,6 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
 from app.database import init_db
-from app.bootstrap_admin import ensure_bootstrap_admin
 from app.routes import auth_router, rutas_router, rutas_publicadas_router, grupos_router
 from app.routes.maps import router as maps_router
 
@@ -33,7 +32,6 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     init_db()
-    ensure_bootstrap_admin()
 
 # Include routers
 app.include_router(auth_router)
