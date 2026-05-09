@@ -45,9 +45,8 @@ services:
 
   frontend:
     build:
-      # Contexto = raíz del monorepo para que el Dockerfile acceda a packages/shared
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: bcnrockers-frontend
     ports:
       - "3000:3000"
@@ -55,9 +54,8 @@ services:
       # En local apunta al backend en Docker; en producción usa la URL de Render
       - VITE_API_URL=${VITE_API_URL:-http://localhost:8002}
     volumes:
-      - ./frontend:/app/frontend
-      - ./packages:/app/packages
-      - /app/frontend/node_modules
+      - ./frontend:/app
+      - /app/node_modules
     command: npm run dev -- --host 0.0.0.0
     depends_on:
       - backend
