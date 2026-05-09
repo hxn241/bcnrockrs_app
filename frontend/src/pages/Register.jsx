@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { formatApiErrorMessage } from '../utils/apiErrorMessage'
 import logo from '../assets/kurvemaster-logo.png'
 import '../styles/Auth.css'
 
@@ -47,7 +48,7 @@ export default function Register() {
       await register(username, email, password, fullName, mMarca, mModelo, anio)
       navigate('/login')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error en el registro')
+      setError(formatApiErrorMessage(err, 'Error en el registro'))
     } finally {
       setLoading(false)
     }

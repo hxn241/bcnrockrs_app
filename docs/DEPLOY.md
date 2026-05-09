@@ -43,10 +43,7 @@ DEBUG=True
 
 ### Configurar el backend
 
-```bash
-cp backend/.env.example backend/.env
-# Edita backend/.env y ajusta DATABASE_URL si es necesario
-```
+Crea `backend/.env` con al menos `POSTGRES_URL` (o `DATABASE_URL`), `SECRET_KEY` y el resto según [README](../README.md#variables-de-entorno-backend). El script `setup.sh` genera un `.env` mínimo si no existe.
 
 ### Arrancar
 
@@ -79,7 +76,8 @@ Abre dos terminales: una para el backend (puerto 8002) y otra para el frontend (
 
 | Variable | Valor |
 |----------|-------|
-| `DATABASE_URL` | La Internal Database URL de tu PostgreSQL en Render |
+| `DATABASE_URL` | Suele **rellenarse sola** al enlazar Postgres en Render (Internal Database URL). |
+| `POSTGRES_URL` | En **backend/.env** local siempre esta clave; en Render es opcional (misma URL que Postgres si prefieres unificar nombres). |
 | `SECRET_KEY` | Una clave aleatoria larga (ver abajo cómo generarla) |
 | `DEBUG` | `False` |
 | `CORS_ORIGINS` | `https://tu-app.vercel.app` (la URL de tu frontend en Vercel) |
@@ -116,7 +114,8 @@ Vercel desplegará automáticamente en cada push a `main`.
 
 | Variable | Local Docker | Producción (Render) |
 |----------|-------------|---------------------|
-| `DATABASE_URL` | `postgresql://bcnrockers:bcnrockers_password@postgres:5432/bcnrockers_db` | Internal URL de Render PostgreSQL |
+| `POSTGRES_URL` | `docker-compose` (backend) y **backend/.env** en local | Misma internal URL del Postgres (opcional) |
+| `DATABASE_URL` | *No usar en .env local; preferir `POSTGRES_URL`* | Suele crearla Render al enlazar Postgres; equivalente a `POSTGRES_URL` |
 | `SECRET_KEY` | cualquier valor | **clave aleatoria segura** |
 | `DEBUG` | `True` | `False` |
 | `CORS_ORIGINS` | *(vacío — usa defaults)* | `https://tu-app.vercel.app` |

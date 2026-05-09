@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { formatApiErrorMessage } from '../utils/apiErrorMessage'
 import logo from '../assets/kurvemaster-logo.png'
 import '../styles/Auth.css'
 
@@ -21,7 +22,7 @@ export default function Login() {
       await login(username, password)
       navigate('/dashboard')
     } catch (err) {
-      setError('Usuario o contraseña incorrectos')
+      setError(formatApiErrorMessage(err, 'Usuario o contraseña incorrectos'))
     } finally {
       setLoading(false)
     }

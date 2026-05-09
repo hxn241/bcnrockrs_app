@@ -19,7 +19,7 @@ Aplicación para un club de moto: **catálogo de plantillas de ruta**, **calenda
 
 - Python 3.10+ recomendado (3.8+ suele valer si las dependencias lo permiten).
 - Node.js 18+ (o 16+ según tu entorno).
-- SQLite por defecto (configurable vía `DATABASE_URL`).
+- SQLite por defecto si no defines `POSTGRES_URL` en `backend/.env`; para Postgres usa `POSTGRES_URL` (Render suele inyectar `DATABASE_URL`, también válido).
 
 ## Estructura del repositorio
 
@@ -48,7 +48,7 @@ cd backend
 python -m venv venv
 source venv/bin/activate   # Windows: venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env       # Edita SECRET_KEY y opciones (ver abajo)
+# Crea backend/.env si no existe (ver tabla «Variables de entorno» más abajo)
 python -m uvicorn app.main:app --reload --port 8002
 ```
 
@@ -67,13 +67,13 @@ Cliente de desarrollo: `http://localhost:5173` (puerto por defecto de Vite).
 
 ## Variables de entorno (backend)
 
-Fichero `.env` en `backend/` (ver `.env.example`). Pydantic Settings acepta nombres en mayúsculas equivalentes a los campos de `config.py`.
+Fichero único `backend/.env` (no versionar). Pydantic Settings lee ese archivo y el proceso también acepta variables ya exportadas en el sistema (p. ej. `DATABASE_URL` en Render).
 
 Obligatorias / habituales:
 
 | Variable | Descripción |
 |----------|-------------|
-| `DATABASE_URL` | Por defecto SQLite local (`sqlite:///./rutas_moto.db`). |
+| `POSTGRES_URL` | URL de la base (en **backend/.env** usa siempre esta clave). También se acepta `DATABASE_URL` (p. ej. Render). SQLite local: `POSTGRES_URL=sqlite:///./rutas_moto.db`. |
 | `SECRET_KEY` | Clave para firmar JWT; cambiar en producción. |
 | `ALGORITHM` | Por defecto `HS256`. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Caducidad del token (el login puede usar otra duración en código). |

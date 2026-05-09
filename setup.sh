@@ -50,8 +50,15 @@ echo "Instalando dependencias..."
 pip install -q -r requirements.txt
 
 if [ ! -f ".env" ]; then
-    cp .env.example .env
-    echo -e "${GREEN}✓ Archivo .env creado (edítalo si necesitas cambiar valores)${NC}"
+    cat > .env << 'BACKEND_ENV'
+# Backend — edita valores según tu entorno (docs en README y docs/POSTGRESQL_SETUP.md)
+POSTGRES_URL=sqlite:///./rutas_moto.db
+SECRET_KEY=reemplaza-en-produccion-con-valor-aleatorio-largo
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+DEBUG=True
+BACKEND_ENV
+    echo -e "${GREEN}✓ backend/.env creado (ajusta POSTGRES_URL y SECRET_KEY)${NC}"
 else
     echo -e "${GREEN}✓ .env ya existe${NC}"
 fi

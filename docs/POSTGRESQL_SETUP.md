@@ -21,8 +21,8 @@ La aplicación usa **PostgreSQL** como base de datos. SQLite solo se usaba en de
 El backend lee la configuración desde variables de entorno (o archivo `.env`):
 
 ```env
-# URL de conexión a PostgreSQL
-DATABASE_URL=postgresql://usuario:contraseña@host:5432/nombre_db
+# En backend/.env usa siempre POSTGRES_URL para la URL de la base.
+POSTGRES_URL=postgresql://usuario:contraseña@host:5432/nombre_db
 
 # JWT
 SECRET_KEY=clave-super-secreta-minimo-32-caracteres
@@ -35,7 +35,7 @@ GOOGLE_MAPS_API_KEY=tu-api-key
 MAX_UPLOAD_MB=8
 ```
 
-### Formato de DATABASE_URL
+### Formato de POSTGRES_URL
 
 ```
 postgresql://USUARIO:CONTRASEÑA@HOST:PUERTO/NOMBRE_DB
@@ -92,6 +92,8 @@ docker compose up -d postgres
 
 ### 2. Ejecuta el script de migración
 
+La URL de PostgreSQL puede ir en `backend/.env` como `POSTGRES_URL` o `DATABASE_URL` (como la API); si no pasas `--postgres`, el script la lee de ahí.
+
 ```bash
 # Desde el directorio raíz del proyecto
 backend/venv/bin/python backend/migrate_sqlite_to_postgres.py \
@@ -133,12 +135,13 @@ docker compose exec postgres psql -U bcnrockers -d bcnrockers_db \
    - **Root Directory**: `backend`
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-3. En **Environment Variables**, añade:
+3. En **Environment Variables**, enlaza la base Postgres (Render suele crear `DATABASE_URL`) o define manualmente **`POSTGRES_URL`** / **`DATABASE_URL`** con la Internal URL:
    ```
-   DATABASE_URL=<Internal Database URL de Render Postgres>
+   POSTGRES_URL=<Internal Database URL de Render Postgres>
    SECRET_KEY=<clave-aleatoria-segura>
    DEBUG=False
    ```
+   (`DATABASE_URL` con la misma URL que Postgres también es válido.)
 
 ### Migrar datos a Render Postgres
 

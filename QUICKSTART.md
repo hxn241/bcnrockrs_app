@@ -95,7 +95,7 @@ bcnrockers_app/
 
 ### Backend (backend/.env)
 ```
-DATABASE_URL=sqlite:///./rutas_moto.db
+POSTGRES_URL=sqlite:///./rutas_moto.db
 SECRET_KEY=tu-clave-super-segura-cambiar-en-produccion
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30

@@ -24,7 +24,7 @@ services:
     ports:
       - "8002:8002"
     environment:
-      - DATABASE_URL=postgresql://bcnrockers:bcnrockers_password@postgres:5432/bcnrockers_db
+      - POSTGRES_URL=postgresql://bcnrockers:bcnrockers_password@postgres:5432/bcnrockers_db
       # ⚠️  Cambia SECRET_KEY por un valor seguro antes de usar en producción
       - SECRET_KEY=${SECRET_KEY:-tu-clave-super-segura-cambiar-en-produccion}
       - DEBUG=${DEBUG:-False}

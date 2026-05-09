@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect, useCallback } from 'react'
 import { authService } from '../services/api'
+import { formatApiErrorMessage } from '../utils/apiErrorMessage'
 
 const AuthContext = createContext()
 
@@ -36,7 +37,7 @@ export const AuthProvider = ({ children }) => {
       )
       return response.data
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error en registro')
+      setError(formatApiErrorMessage(err, 'Error en registro'))
       throw err
     }
   }
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }) => {
       
       return userData
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error en login')
+      setError(formatApiErrorMessage(err, 'Error en login'))
       throw err
     }
   }

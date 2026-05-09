@@ -7,22 +7,7 @@ import EditRouteModal from '../components/EditRouteModal'
 import { nombreComunidad, nombreProvincia } from '../constants/espanaUbicacion'
 import '../styles/Dashboard.css'
 import '../styles/CatalogoRutas.css'
-
-function formatApiError(err, fallback = 'Operación no disponible.') {
-  if (!err.response) {
-    return 'No hay respuesta del servidor. ¿Está arrancado el API y bien la URL (VITE_API_URL / mismo host)?'
-  }
-  const d = err.response?.data?.detail
-  if (typeof d === 'string') return d
-  if (Array.isArray(d) && d.length > 0) {
-    const first = d[0]
-    if (typeof first === 'string') return first
-    if (first?.msg) return first.msg
-  }
-  if (err.response?.status === 403) return 'No tienes permiso para esta acción.'
-  if (err.response?.status === 401) return 'Sesión caducada: vuelve a iniciar sesión.'
-  return fallback
-}
+import { formatApiErrorMessage } from '../utils/apiErrorMessage'
 
 function esAdmin(user) {
   return user?.is_admin === true || user?.is_admin === 1
@@ -54,7 +39,7 @@ export default function CatalogoRutas() {
       const response = await rutasService.getAllRoutes()
       setRutas(response.data)
     } catch (err) {
-      setError(formatApiError(err, 'Error al cargar el catálogo de rutas.'))
+      setError(formatApiErrorMessage(err, 'Error al cargar el catálogo de rutas.'))
     } finally {
       setLoading(false)
     }
@@ -74,7 +59,7 @@ export default function CatalogoRutas() {
       await rutasService.deleteRoute(ruta.id)
       setRutas((prev) => prev.filter((r) => r.id !== ruta.id))
     } catch (err) {
-      setError(formatApiError(err, 'No se pudo eliminar la ruta.'))
+      setError(formatApiErrorMessage(err, 'No se pudo eliminar la ruta.'))
     } finally {
       setDeletingId(null)
     }
@@ -91,7 +76,7 @@ export default function CatalogoRutas() {
       }
       await loadRutas()
     } catch (err) {
-      setError(formatApiError(err, 'No se pudo actualizar la marca.'))
+      setError(formatApiErrorMessage(err, 'No se pudo actualizar la marca.'))
     } finally {
       setMarcaBusyId(null)
     }
