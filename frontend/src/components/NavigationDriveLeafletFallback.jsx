@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { fixLeafletDefaultIcons } from '../utils/leafletIcons'
+import { bearingAlongPolyline, smoothBearing } from '../utils/routeBearing'
 import {
   isRouteGeoInputEmpty,
+  lngLatObjectsFromRoute,
   parseLineStringFeatureFromRoute
 } from '../utils/navigationRouteGeoJson'
 import './NavigationDriveMap.css'
@@ -13,7 +15,10 @@ fixLeafletDefaultIcons()
 const WEBGL_BANNER_STORAGE_KEY = 'kurvemaster_nav_hide_webgl_banner'
 
 const DEFAULT_WEBGL_NOTICE =
-  'Mapa en 2D (norte arriba): aquí no hay WebGL, así que no podemos mostrar la vista inclinada. La ruta y el GPS funcionan igual.'
+  'Vista 2D sin inclinación (no hay WebGL). La flecha indica el sentido de marcha (GPS o el trazado); el mapa sigue tu posición al moverte.'
+
+/** Coherente con NavigationDriveMap (heading solo si hay movimiento mínimo). */
+const MIN_SPEED_MPS_FOR_GPS_HEADING = 0.2
 
 function leafletZoomFromSpeedMps(speedMps) {
   if (speedMps == null || Number.isNaN(speedMps) || speedMps < 0.25) return 16
@@ -25,8 +30,8 @@ function leafletZoomFromSpeedMps(speedMps) {
 }
 
 /**
- * Vista navegación sin WebGL (VMs, Mesa llvmpipe roto, políticas del navegador).
- * Leaflet + teselas raster con etiquetas img; sin inclinación ni rotación tipo GPS.
+ * Vista navegación sin WebGL (VMs, Mesa llvmpipe roto). Leaflet + teselas raster;
+ * flecha tipo GPS (sentido de marcha) y seguimiento del centro como en MapLibre sin inclinar el mapa.
  */
 export default function NavigationDriveLeafletFallback({
   routeGeoJson,
@@ -39,6 +44,11 @@ export default function NavigationDriveLeafletFallback({
   const containerRef = useRef(null)
   const mapRef = useRef(null)
   const userLayerRef = useRef(null)
+  const smoothBearingRef = useRef(null)
+  /** Rumbo mostrado en la flecha (° horario desde el norte). */
+  const [chevronDeg, setChevronDeg] = useState(0)
+
+  const routeCoords = useMemo(() => lngLatObjectsFromRoute(routeGeoJson), [routeGeoJson])
   const [bannerDismissed, setBannerDismissed] = useState(() => {
     try {
       return typeof sessionStorage !== 'undefined' && sessionStorage.getItem(WEBGL_BANNER_STORAGE_KEY) === '1'
@@ -114,6 +124,11 @@ export default function NavigationDriveLeafletFallback({
   }, [routeGeoJson, colorScheme])
 
   useEffect(() => {
+    smoothBearingRef.current = null
+    setChevronDeg(0)
+  }, [routeGeoJson])
+
+  useEffect(() => {
     const map = mapRef.current
     const ug = userLayerRef.current
     if (!map || !ug) return
@@ -133,26 +148,24 @@ export default function NavigationDriveLeafletFallback({
 
     const heading = userPosition.heading
     const speed = userPosition.speed
-    const gpsOk =
+    const gpsHeadingOk =
       heading != null &&
       !Number.isNaN(heading) &&
       speed != null &&
       !Number.isNaN(speed) &&
-      speed >= 0.45
+      speed >= MIN_SPEED_MPS_FOR_GPS_HEADING
 
-    if (gpsOk) {
-      const hrad = (heading * Math.PI) / 180
-      const k = 0.00045
-      const dlat = Math.cos(hrad) * k
-      const dlng = (Math.sin(hrad) * k) / Math.cos((ll.lat * Math.PI) / 180 || 1e-6)
-      const tip = L.latLng(ll.lat + dlat, ll.lng + dlng)
-      L.polyline([ll, tip], {
-        color: '#2563eb',
-        weight: 5,
-        opacity: 0.95,
-        lineCap: 'round'
-      }).addTo(ug)
+    let bearing = gpsHeadingOk
+      ? heading
+      : bearingAlongPolyline(userPosition.lat, userPosition.lng, routeCoords)
+
+    if (bearing == null || Number.isNaN(bearing)) {
+      bearing = smoothBearingRef.current ?? 0
     }
+
+    const blend = gpsHeadingOk ? 0.32 : 0.18
+    smoothBearingRef.current = smoothBearing(smoothBearingRef.current, bearing, blend)
+    setChevronDeg(smoothBearingRef.current)
 
     L.circleMarker(ll, {
       radius: 9,
@@ -162,12 +175,9 @@ export default function NavigationDriveLeafletFallback({
       weight: 2
     }).addTo(ug)
 
-    map.panTo(ll, { animate: true, duration: 0.22 })
     const z = leafletZoomFromSpeedMps(userPosition.speed)
-    if (Math.abs(map.getZoom() - z) >= 1) {
-      map.setZoom(z, { animate: true })
-    }
-  }, [userPosition, routeGeoJson, colorScheme])
+    map.setView(ll, z, { animate: true, duration: 0.28 })
+  }, [userPosition, routeCoords, routeGeoJson, colorScheme])
 
   if (isRouteGeoInputEmpty(routeGeoJson)) {
     return <div className="navigation-drive-map-error">Sin recorrido para mostrar.</div>
@@ -181,6 +191,12 @@ export default function NavigationDriveLeafletFallback({
       </div>
     )
   }
+
+  const hasGps =
+    userPosition?.lat != null &&
+    userPosition?.lng != null &&
+    !Number.isNaN(userPosition.lat) &&
+    !Number.isNaN(userPosition.lng)
 
   return (
     <div className="navigation-drive-map-wrap navigation-drive-map-wrap--leaflet">
@@ -196,11 +212,34 @@ export default function NavigationDriveLeafletFallback({
           </button>
         </div>
       ) : null}
+      {!hasGps ? (
+        <p className="navigation-drive-map-hint navigation-drive-map-hint--leaflet">
+          Esperando señal GPS para seguir tu posición en tiempo real…
+        </p>
+      ) : null}
       <div
         ref={containerRef}
         className="navigation-drive-map-inner navigation-drive-map-inner--leaflet"
         style={{ height }}
       />
+      {hasGps ? (
+        <div className="navigation-drive-chevron navigation-drive-chevron--leaflet" aria-hidden="true">
+          <div
+            className="navigation-drive-chevron-rotate"
+            style={{ transform: `rotate(${chevronDeg}deg)` }}
+          >
+            <svg width="52" height="52" viewBox="0 0 52 52">
+              <polygon
+                points="26,5 47,44 26,34 5,44"
+                fill="#2563eb"
+                stroke="#ffffff"
+                strokeWidth="2.5"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

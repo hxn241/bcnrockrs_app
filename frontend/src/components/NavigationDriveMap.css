@@ -170,3 +170,18 @@
   width: 100%;
   border-radius: 0 0 10px 10px;
 }
+
+/* Fallback Leaflet: flecha GPS encima de las teselas (Leaflet usa z-index altos). */
+.navigation-drive-map-wrap--leaflet .navigation-drive-chevron--leaflet {
+  z-index: 1100;
+}
+
+.navigation-drive-map-wrap--leaflet .navigation-drive-map-hint--leaflet {
+  z-index: 1101;
+}
+
+.navigation-drive-chevron-rotate {
+  transform-origin: 50% 58%;
+  transition: transform 0.18s ease-out;
+  will-change: transform;
+}

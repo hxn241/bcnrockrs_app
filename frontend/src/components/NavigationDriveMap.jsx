@@ -13,6 +13,9 @@ import NavigationDriveLeafletFallback from './NavigationDriveLeafletFallback'
 /** Velo de carga: `idle` espera todas las teselas (en red lenta tarda mucho); esto acota el tiempo. */
 const TILES_READY_MAX_WAIT_MS = 2200
 
+/** Por debajo de ~0,7 km/h muchos GPS no dan `heading` fiable; encima usamos el rumbo del dispositivo si viene. */
+const MIN_SPEED_MPS_FOR_GPS_HEADING = 0.2
+
 /** Teselas día vía CDN Carto (mejor compatibilidad WebGL/CORS que tile.openstreetmap.org directo). */
 const CARTO_DAY_RASTER_STYLE = {
   version: 8,
@@ -462,7 +465,7 @@ export default function NavigationDriveMap({
       !Number.isNaN(heading) &&
       speed != null &&
       !Number.isNaN(speed) &&
-      speed >= 0.45
+      speed >= MIN_SPEED_MPS_FOR_GPS_HEADING
 
     let bearing = gpsHeadingOk
       ? heading
