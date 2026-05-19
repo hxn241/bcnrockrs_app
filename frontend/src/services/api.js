@@ -92,6 +92,7 @@ function createServices(api) {
     getHistoricoRoutes: (filters) =>
       api.get('/rutas-publicadas/historico', listadoSalidasConfig(filters)),
     getRoutesByDate: (fecha) => api.get(`/rutas-publicadas/calendario/${fecha}`),
+    getById: (id) => api.get(`/rutas-publicadas/${id}`),
     publishRoute: (ruta) => api.post('/rutas-publicadas', ruta),
     addAttendee: (rutaId) => api.post(`/rutas-publicadas/${rutaId}/asistentes`),
     removeAttendee: (rutaId) => api.delete(`/rutas-publicadas/${rutaId}/asistentes`),
@@ -131,7 +132,17 @@ function createServices(api) {
     deleteLogo: (grupoId) => api.delete(`/grupos/${grupoId}/logo`)
   }
 
-  return { authService, rutasService, rutasPublicadasService, gruposService, usersService }
+  const mapsService = {
+    geocode: (q, limit = 8) =>
+      api.get('/maps/geocode', { params: { q: String(q).trim(), limit } }),
+    routeOsrm: (coordinates) => api.post('/maps/route-osrm', { coordinates }),
+    routeOsrmGuidance: (coordinates) =>
+      api.post('/maps/route-osrm-guidance', { coordinates }),
+    /** Valhalla si VALHALLA_BASE_URL; si no (o fallo), OSRM. */
+    routeGuidance: (coordinates) => api.post('/maps/route-guidance', { coordinates })
+  }
+
+  return { authService, rutasService, rutasPublicadasService, gruposService, usersService, mapsService }
 }
 
 // ──────────────────────────────────────────────
@@ -142,8 +153,8 @@ const api = createApiClient({
   getToken: () => localStorage.getItem('token')
 })
 
-const { authService, rutasService, rutasPublicadasService, gruposService, usersService } =
+const { authService, rutasService, rutasPublicadasService, gruposService, usersService, mapsService } =
   createServices(api)
 
-export { authService, rutasService, rutasPublicadasService, gruposService, usersService }
+export { authService, rutasService, rutasPublicadasService, gruposService, usersService, mapsService }
 export default api

@@ -1,0 +1,12 @@
+# Copia a Caddyfile y sustituye el dominio.
+# Caddy obtiene Let's Encrypt automáticamente si los puertos 80/443 llegan a este host.
+#
+# Ejecutar Caddy en el mismo servidor que Valhalla:
+#   docker compose -f docker-compose.yml up -d   # Valhalla en localhost:8002
+#   caddy run --config Caddyfile
+#
+# O usa el contenedor oficial de Caddy montando este fichero.
+
+valhalla.ejemplo.com {
+	reverse_proxy 127.0.0.1:8002
+}

@@ -11,6 +11,7 @@ from app.database import get_db
 from app.models import User, Ruta, RutaPublicada, Asistente, RutaPublicadaFoto
 from app.models.models import RutaHistorico
 from app.schemas import RutaCreate, RutaResponse, RutaUpdate
+from app.schemas.schemas import normalize_recorrido_geojson, osm_encuentro_url_desde_primer_punto
 from app.auth import get_current_user, get_admin_user
 from app.routes.maps import compute_route_embed_url
 
@@ -28,10 +29,11 @@ def _apply_ruta_catalogo_filters(q, ccaa: Optional[str], provincia: Optional[str
 
 
 def _ruta_to_response(r: Ruta) -> RutaResponse:
+    src = getattr(r, "map_source", None) or "google"
     return RutaResponse(
         id=r.id,
         nombre=r.nombre,
-        link_ruta=r.link_ruta,
+        link_ruta=r.link_ruta or "",
         link_encuentro=r.link_encuentro,
         link_restaurante=r.link_restaurante,
         fecha=r.fecha,
@@ -42,6 +44,8 @@ def _ruta_to_response(r: Ruta) -> RutaResponse:
         ubicacion_region=r.ubicacion_region,
         ubicacion_ciudad=r.ubicacion_ciudad,
         marcada_eliminacion=bool(getattr(r, "marcada_eliminacion", False)),
+        map_source=src,
+        recorrido_geojson=getattr(r, "recorrido_geojson", None),
     )
 
 
@@ -108,7 +112,10 @@ def create_route(
 
     data = ruta.model_dump()
     new_route = Ruta(**data, creador_id=current_user.id)
-    new_route.embed_recorrido_url = compute_route_embed_url(new_route.link_ruta)
+    if getattr(new_route, "map_source", "google") == "osm":
+        new_route.embed_recorrido_url = None
+    else:
+        new_route.embed_recorrido_url = compute_route_embed_url(new_route.link_ruta)
     db.add(new_route)
     db.commit()
     db.refresh(new_route)
@@ -133,11 +140,39 @@ def update_route(
         )
 
     update_data = ruta_update.model_dump(exclude_unset=True)
+
+    if "recorrido_geojson" in update_data:
+        raw_geo = update_data["recorrido_geojson"]
+        if raw_geo in (None, ""):
+            update_data["recorrido_geojson"] = None
+        else:
+            try:
+                update_data["recorrido_geojson"] = normalize_recorrido_geojson(raw_geo)
+            except ValueError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=str(e),
+                )
+
     link_changed = "link_ruta" in update_data
+    map_changed = "map_source" in update_data
+
     for field, value in update_data.items():
         setattr(route, field, value)
-    if link_changed:
-        route.embed_recorrido_url = compute_route_embed_url(route.link_ruta)
+
+    effective_src = getattr(route, "map_source", None) or "google"
+    if effective_src == "osm":
+        route.embed_recorrido_url = None
+        enc = (route.link_encuentro or "").strip()
+        if not enc and route.recorrido_geojson:
+            try:
+                geo = normalize_recorrido_geojson(route.recorrido_geojson)
+                route.recorrido_geojson = geo
+                route.link_encuentro = osm_encuentro_url_desde_primer_punto(geo)
+            except ValueError:
+                pass
+    elif link_changed or map_changed:
+        route.embed_recorrido_url = compute_route_embed_url(route.link_ruta or "")
 
     db.commit()
     db.refresh(route)

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import { rutasPublicadasService } from '../services/api'
 import MapPreview from './MapPreview'
 import LocationLink from './LocationLink'
@@ -88,6 +89,8 @@ export default function RouteDetailModal({
     : 'Punto de encuentro'
   const restaurantUrl = route.link_restaurante_personalizado || route.ruta?.link_restaurante
   const rutaGmapsUrl = route.ruta?.link_ruta
+  const esRecorridoOsm =
+    (route.ruta?.map_source || 'google') === 'osm' && Boolean(route.ruta?.recorrido_geojson)
   const catalogoEncuentro = route.ruta?.link_encuentro || ''
 
   useEffect(() => {
@@ -203,12 +206,18 @@ export default function RouteDetailModal({
 
     const zonaTxt = tieneZonaSalida(route) ? `\n🌍 Zona: ${formatUbicacionSalida(route)}\n` : '\n'
 
+    const origen = typeof window !== 'undefined' ? window.location.origin : ''
+    const recorridoLine =
+      route.ruta?.map_source === 'osm'
+        ? `${origen}/navegar/salida/${route.id}`
+        : route.ruta.link_ruta
+
     return `🏍️ ${route.ruta.nombre}
 
 📅 Fecha: ${route.dia_ruta}
 🕐 Hora de Salida: ${route.hora_ruta}
 👤 Organizador: ${route.organizador?.username || 'Desconocido'}${zonaTxt}
-🗺️ Ruta: ${route.ruta.link_ruta}
+🗺️ Ruta: ${recorridoLine}
 📍 Encuentro: ${meetingLink}
 ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
 
@@ -261,15 +270,23 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
               </div>
               <div className="form-group">
                 <div className="form-label-with-gmaps-info">
-                  <label htmlFor="edit-encuentro">Punto de encuentro (enlace Google Maps):</label>
-                  <GoogleMapsLinkInfo />
+                  <label htmlFor="edit-encuentro">
+                    {esRecorridoOsm
+                      ? 'Punto de encuentro (enlace):'
+                      : 'Punto de encuentro (enlace Google Maps):'}
+                  </label>
+                  {esRecorridoOsm ? null : <GoogleMapsLinkInfo />}
                 </div>
                 <input
                   id="edit-encuentro"
                   type="url"
                   value={editEncuentro}
                   onChange={(e) => setEditEncuentro(e.target.value)}
-                  placeholder="https://maps.app.goo.gl/..."
+                  placeholder={
+                    esRecorridoOsm
+                      ? 'https://www.openstreetmap.org/… u otro enlace'
+                      : 'https://maps.app.goo.gl/...'
+                  }
                   disabled={loading}
                 />
                 <p className="edit-hint-encuentro">
@@ -360,8 +377,16 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
               url={rutaGmapsUrl}
               embedUrl={route.ruta?.embed_recorrido_url}
               title="🗺️ Recorrido"
+              mapSource={route.ruta?.map_source || 'google'}
+              recorridoGeojson={route.ruta?.recorrido_geojson}
             />
-            {rutaGmapsUrl && (
+            {esRecorridoOsm ? (
+              <div className="maps-gmaps-actions maps-osm-actions">
+                <Link to={`/navegar/salida/${route.id}`} className="btn-maps-gmaps btn-maps-follow">
+                  Iniciar navegación
+                </Link>
+              </div>
+            ) : rutaGmapsUrl ? (
               <div className="maps-gmaps-actions">
                 <a
                   href={rutaGmapsUrl}
@@ -372,7 +397,7 @@ ${restaurantLink ? `🍽️ Restaurante: ${restaurantLink}\n` : ''}
                   Abrir en GMaps
                 </a>
               </div>
-            )}
+            ) : null}
           </div>
 
           {restaurantUrl && (

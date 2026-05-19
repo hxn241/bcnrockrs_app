@@ -1,0 +1,21 @@
+# Valhalla solo (VPS u otro servidor). Ver README.md en esta carpeta.
+#
+# Primera ejecución: construye el grafo desde tile_urls (lento, mucha RAM/CPU).
+# Datos persistidos en ./custom_files
+#
+# Render / KurveMaster API debe poder hacer HTTPS saliente a la URL que pongas en
+# VALHALLA_BASE_URL (recomendado TLS frente a HTTP abierto).
+
+services:
+  valhalla:
+    image: ghcr.io/nilsnolde/docker-valhalla/valhalla:latest
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./custom_files:/custom_files
+    environment:
+      # Cataluña — ajusta a tu zona (Geofabrik): spain, france, etc.
+      - tile_urls=https://download.geofabrik.de/europe/spain/cataluna-latest.osm.pbf
+      - use_tiles_ignore_pbf=False
+      - server_threads=4

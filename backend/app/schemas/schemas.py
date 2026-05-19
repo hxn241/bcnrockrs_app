@@ -1,8 +1,61 @@
+import json
+
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 from datetime import datetime
 from typing import Optional, List, Literal
 
 # User schemas
+
+
+def normalize_recorrido_geojson(v: Optional[str]) -> Optional[str]:
+    """Valida y compacta un GeoJSON LineString (o Feature con LineString). Devuelve JSON str o None."""
+    if v is None:
+        return None
+    if isinstance(v, str) and not v.strip():
+        return None
+    raw = v.strip() if isinstance(v, str) else v
+    try:
+        obj = json.loads(raw) if isinstance(raw, str) else raw
+    except json.JSONDecodeError as e:
+        raise ValueError("recorrido_geojson debe ser JSON válido.") from e
+
+    coords = None
+    if isinstance(obj, dict):
+        if obj.get("type") == "LineString":
+            coords = obj.get("coordinates")
+        elif obj.get("type") == "Feature":
+            geom = obj.get("geometry") or {}
+            if geom.get("type") == "LineString":
+                coords = geom.get("coordinates")
+
+    if not isinstance(coords, list) or len(coords) < 2:
+        raise ValueError("La ruta debe tener al menos 2 puntos (GeoJSON LineString).")
+
+    out_coords = []
+    for c in coords:
+        if not isinstance(c, (list, tuple)) or len(c) < 2:
+            raise ValueError("Coordenadas inválidas en el recorrido.")
+        lng, lat = float(c[0]), float(c[1])
+        if not (-180.0 <= lng <= 180.0 and -90.0 <= lat <= 90.0):
+            raise ValueError("Coordenadas fuera de rango (lng/lat).")
+        out_coords.append([lng, lat])
+
+    canonical = {"type": "LineString", "coordinates": out_coords}
+    return json.dumps(canonical, separators=(",", ":"))
+
+
+def osm_encuentro_url_desde_primer_punto(geojson_str: str) -> str:
+    """Enlace abrible en navegador al primer punto del recorrido (mapa OSM)."""
+    obj = json.loads(geojson_str)
+    coords = obj.get("coordinates") or []
+    if not coords:
+        raise ValueError("Recorrido sin coordenadas.")
+    lng, lat = float(coords[0][0]), float(coords[0][1])
+    return (
+        f"https://www.openstreetmap.org/?mlat={lat}&mlon={lng}#map=15/{lat}/{lng}"
+    )
+
+
 class UserCreate(BaseModel):
     username: str
     email: EmailStr
@@ -84,13 +137,15 @@ class UserPublicProfileResponse(BaseModel):
 # Ruta schemas
 class RutaCreate(BaseModel):
     nombre: str
-    link_ruta: str
-    link_encuentro: str
+    link_ruta: str = ""
+    link_encuentro: str = ""
     link_restaurante: Optional[str] = None
     fecha: Optional[str] = "Por definir"
     hora: Optional[str] = "Por confirmar"
     ubicacion_region: str = Field(..., min_length=2, max_length=16, description="Código CCAA")
     ubicacion_ciudad: str = Field(..., min_length=1, max_length=8, description="Código INE provincia")
+    map_source: Literal["google", "osm"] = "google"
+    recorrido_geojson: Optional[str] = None
 
     @field_validator("ubicacion_region", mode="before")
     @classmethod
@@ -108,6 +163,30 @@ class RutaCreate(BaseModel):
             raise ValueError("La provincia debe ser el código INE numérico (01–52).")
         return s.zfill(2)[:2]
 
+    @model_validator(mode="after")
+    def validate_google_vs_osm(self):
+        if self.map_source == "google":
+            lr = (self.link_ruta or "").strip()
+            if not lr:
+                raise ValueError("El enlace del recorrido (Google Maps) es obligatorio.")
+            enc = (self.link_encuentro or "").strip()
+            if not enc:
+                raise ValueError("El punto de encuentro (enlace) es obligatorio.")
+            return self.model_copy(
+                update={"link_ruta": lr, "recorrido_geojson": None, "link_encuentro": enc}
+            )
+        geo = normalize_recorrido_geojson(self.recorrido_geojson)
+        if not geo:
+            raise ValueError(
+                "Para rutas en mapa abierto, dibuja o importa un recorrido con al menos 2 puntos."
+            )
+        enc = (self.link_encuentro or "").strip()
+        if not enc:
+            enc = osm_encuentro_url_desde_primer_punto(geo)
+        return self.model_copy(
+            update={"link_ruta": "", "recorrido_geojson": geo, "link_encuentro": enc}
+        )
+
 
 class RutaUpdate(BaseModel):
     nombre: Optional[str] = None
@@ -118,6 +197,8 @@ class RutaUpdate(BaseModel):
     hora: Optional[str] = None
     ubicacion_region: Optional[str] = Field(None, max_length=16)
     ubicacion_ciudad: Optional[str] = Field(None, max_length=8)
+    map_source: Optional[Literal["google", "osm"]] = None
+    recorrido_geojson: Optional[str] = None
 
     @field_validator("ubicacion_region", mode="before")
     @classmethod
@@ -154,6 +235,8 @@ class RutaResponse(BaseModel):
     ubicacion_region: Optional[str] = None
     ubicacion_ciudad: Optional[str] = None
     marcada_eliminacion: bool = False
+    map_source: str = "google"
+    recorrido_geojson: Optional[str] = None
 
     class Config:
         from_attributes = True

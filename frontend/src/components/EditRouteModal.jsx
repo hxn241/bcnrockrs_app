@@ -9,9 +9,11 @@ import {
 import '../styles/PublishRouteModal.css'
 
 function buildForm(ruta, mode) {
+  const src = ruta.map_source || 'google'
   return {
     nombre: mode === 'duplicate' ? `Copia de ${ruta.nombre}` : ruta.nombre,
-    link_ruta: ruta.link_ruta || '',
+    map_source: src,
+    link_ruta: src === 'osm' ? '' : ruta.link_ruta || '',
     link_encuentro: ruta.link_encuentro || '',
     link_restaurante: ruta.link_restaurante || '',
     ubicacionCcaa: ruta.ubicacion_region || '',
@@ -29,15 +31,23 @@ export default function EditRouteModal({ ruta, mode, onClose, onSave }) {
   useEffect(() => {
     setForm(buildForm(ruta, mode))
     setError('')
-  }, [ruta.id, mode, ruta.nombre, ruta.link_ruta, ruta.link_encuentro, ruta.link_restaurante, ruta.ubicacion_region, ruta.ubicacion_ciudad])
+  }, [ruta.id, mode, ruta.nombre, ruta.link_ruta, ruta.link_encuentro, ruta.link_restaurante, ruta.ubicacion_region, ruta.ubicacion_ciudad, ruta.map_source])
 
   const handleChange = (field) => (e) => {
     setForm({ ...form, [field]: e.target.value })
   }
 
   const handleSubmit = async () => {
-    if (!form.nombre?.trim() || !form.link_ruta?.trim() || !form.link_encuentro?.trim()) {
-      setError('Nombre de la ruta, enlace del recorrido y punto de encuentro son obligatorios')
+    if (!form.nombre?.trim()) {
+      setError('El nombre de la ruta es obligatorio.')
+      return
+    }
+    if (form.map_source === 'google' && !form.link_encuentro?.trim()) {
+      setError('Para rutas de Google Maps el punto de encuentro (enlace) es obligatorio.')
+      return
+    }
+    if (form.map_source !== 'osm' && !form.link_ruta?.trim()) {
+      setError('El enlace del recorrido (Google Maps) es obligatorio para rutas de Google.')
       return
     }
     const prov = normalizarCodigoProvincia(form.ubicacionProvincia)
@@ -50,16 +60,27 @@ export default function EditRouteModal({ ruta, mode, onClose, onSave }) {
       setLoading(true)
       const payload = {
         nombre: form.nombre.trim(),
-        link_ruta: form.link_ruta.trim(),
         link_encuentro: form.link_encuentro.trim(),
         link_restaurante: form.link_restaurante.trim() || null,
         ubicacion_region: form.ubicacionCcaa.trim().toUpperCase(),
         ubicacion_ciudad: prov
       }
+      if (form.map_source === 'osm') {
+        payload.link_ruta = ''
+      } else {
+        payload.link_ruta = form.link_ruta.trim()
+      }
       if (mode === 'edit') {
         await rutasService.updateRoute(ruta.id, payload)
       } else {
-        await rutasService.createRoute(payload)
+        const createPayload = { ...payload }
+        if (form.map_source === 'osm') {
+          createPayload.map_source = 'osm'
+          createPayload.recorrido_geojson = ruta.recorrido_geojson
+        } else {
+          createPayload.map_source = 'google'
+        }
+        await rutasService.createRoute(createPayload)
       }
       onSave()
       onClose()
@@ -148,21 +169,39 @@ export default function EditRouteModal({ ruta, mode, onClose, onSave }) {
               value={form.link_ruta}
               onChange={handleChange('link_ruta')}
               placeholder="https://maps.app.goo.gl/..."
+              disabled={form.map_source === 'osm'}
             />
+            {form.map_source === 'osm' ? (
+              <p className="form-hint-edit-ruta">
+                Esta plantilla usa recorrido en mapa abierto; edita el trazo desde «Crear ruta (mapa)» si añadimos
+                editor aquí más adelante.
+              </p>
+            ) : null}
           </div>
 
           <div className="form-group">
             <div className="form-label-with-gmaps-info">
-              <label htmlFor="edit-ruta-encuentro">Punto de encuentro (enlace) *</label>
-              <GoogleMapsLinkInfo />
+              <label htmlFor="edit-ruta-encuentro">
+                Punto de encuentro (enlace){form.map_source === 'google' ? ' *' : ' (opcional)'}
+              </label>
+              {form.map_source === 'google' ? <GoogleMapsLinkInfo /> : null}
             </div>
             <input
               id="edit-ruta-encuentro"
               type="url"
               value={form.link_encuentro}
               onChange={handleChange('link_encuentro')}
-              placeholder="https://maps.app.goo.gl/..."
+              placeholder={
+                form.map_source === 'osm'
+                  ? 'Opcional: Maps, OSM… Vacío → primer punto del recorrido'
+                  : 'https://maps.app.goo.gl/...'
+              }
             />
+            {form.map_source === 'osm' ? (
+              <p className="form-hint-edit-ruta">
+                Si lo dejas vacío, al guardar se usará un enlace OpenStreetMap al inicio del recorrido dibujado.
+              </p>
+            ) : null}
           </div>
 
           <div className="form-group">

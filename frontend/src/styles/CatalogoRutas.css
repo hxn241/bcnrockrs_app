@@ -55,6 +55,16 @@
   text-underline-offset: 2px;
 }
 
+.catalogo-rutas-osm-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
 .catalogo-rutas-row-pendiente {
   background: rgba(180, 40, 40, 0.06);
 }

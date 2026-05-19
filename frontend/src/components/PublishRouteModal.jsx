@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { rutasService, rutasPublicadasService, gruposService } from '../services/api'
-import GoogleMapEmbed from './GoogleMapEmbed'
+import MapPreview from './MapPreview'
 import GoogleMapsLinkInfo from './GoogleMapsLinkInfo'
 import {
   COMUNIDADES_AUTONOMAS,
@@ -403,10 +403,12 @@ export default function PublishRouteModal({ date, onClose, onPublish }) {
                   {selectedRuta && (
                     <>
                       <div className="map-section">
-                        <GoogleMapEmbed
+                        <MapPreview
                           url={selectedRuta.link_ruta}
                           embedUrl={selectedRuta.embed_recorrido_url}
                           title="Recorrido"
+                          mapSource={selectedRuta.map_source || 'google'}
+                          recorridoGeojson={selectedRuta.recorrido_geojson}
                         />
                       </div>
 

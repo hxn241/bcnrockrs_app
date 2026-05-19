@@ -138,14 +138,20 @@ export default function CatalogoRutas() {
                         : '—'}
                     </td>
                     <td>
-                      <a
-                        href={r.link_ruta}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="catalogo-rutas-link-preview"
-                      >
-                        Abrir
-                      </a>
+                      {(r.map_source || 'google') === 'osm' ? (
+                        <span className="catalogo-rutas-osm-badge" title="Recorrido en mapa abierto">
+                          Mapa OSM
+                        </span>
+                      ) : (
+                        <a
+                          href={r.link_ruta}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="catalogo-rutas-link-preview"
+                        >
+                          Abrir
+                        </a>
+                      )}
                     </td>
                     <td>
                       {r.marcada_eliminacion ? (

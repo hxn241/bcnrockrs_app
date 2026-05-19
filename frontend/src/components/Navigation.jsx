@@ -24,6 +24,9 @@ export default function Navigation({ user, onLogout }) {
               <Link to="/grupos">Grupos</Link>
             </li>
             <li>
+              <Link to="/crear-ruta-mapa">Crear ruta (mapa)</Link>
+            </li>
+            <li>
               <Link to="/catalogo">Catálogo de rutas</Link>
             </li>
             <li className="user-info">

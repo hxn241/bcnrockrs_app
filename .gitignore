@@ -68,6 +68,12 @@ Thumbs.db
 # Docker
 .dockerignore
 
+# Valhalla (tiles generados en local)
+docker/valhalla/custom_files/**
+!docker/valhalla/custom_files/.gitkeep
+deploy/valhalla-standalone/custom_files/**
+!deploy/valhalla-standalone/custom_files/.gitkeep
+
 # Project specific
 *.sqlite
 *.sqlite3

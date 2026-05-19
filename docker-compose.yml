@@ -31,6 +31,10 @@ services:
       # Orígenes CORS extra (separados por coma). Déjalo vacío en local.
       # Ejemplo: CORS_ORIGINS=https://tu-app.vercel.app
       - CORS_ORIGINS=${CORS_ORIGINS:-}
+      # Valhalla para /maps/route-guidance (vacío = solo OSRM). Con perfil valhalla: http://valhalla:8002
+      - VALHALLA_BASE_URL=${VALHALLA_BASE_URL:-}
+      - VALHALLA_COSTING=${VALHALLA_COSTING:-motorcycle}
+      - VALHALLA_GUIDANCE_LANGUAGE=${VALHALLA_GUIDANCE_LANGUAGE:-es-ES}
     volumes:
       - ./backend:/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload
@@ -42,6 +46,23 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+
+  # Valhalla (opcional): docker compose --profile valhalla up
+  # Docs: docs/VALHALLA.md — Define VALHALLA_BASE_URL=http://valhalla:8002 en .env raíz
+  valhalla:
+    profiles:
+      - valhalla
+    image: ghcr.io/nilsnolde/docker-valhalla/valhalla:latest
+    container_name: kurvemaster-valhalla
+    ports:
+      - "8003:8002"
+    volumes:
+      - ./docker/valhalla/custom_files:/custom_files
+    environment:
+      # Extracto pequeño para primera prueba; cambia por cataluna/spain en docker-compose o docs/VALHALLA.md
+      - tile_urls=https://download.geofabrik.de/europe/andorra-latest.osm.pbf
+      - use_tiles_ignore_pbf=False
+      - server_threads=2
 
   frontend:
     build:

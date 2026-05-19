@@ -1,15 +1,25 @@
 from __future__ import annotations
 
+import json
 import re
 import urllib.request
 from typing import Optional
 import requests
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, field_validator
 from urllib.parse import unquote, unquote_plus, quote, urlparse, parse_qs
 
+from app.auth import get_current_user
 from app.config import settings
+from app.models import User
 
 router = APIRouter(prefix="/maps", tags=["maps"])
+
+# Búsqueda de lugares (proxy Nominatim — uso moderado; ver políticas OSM).
+_NOMINATIM_SEARCH = "https://nominatim.openstreetmap.org/search"
+_NOMINATIM_UA = (
+    "KurveMaster/1.0 (route planner; +https://kurvemaster-app-frontend.vercel.app)"
+)
 
 _MAX_SEGMENT_LEN = 512
 _SHORT_LINK_TIMEOUT_S = 10
@@ -354,6 +364,564 @@ def compute_route_embed_url(link_ruta: str) -> Optional[str]:
     except Exception as e:
         _log_debug(f"maps: compute_route_embed_url: {e}")
         return None
+
+
+class GeocodeItem(BaseModel):
+    lat: float
+    lng: float
+    label: str
+
+
+@router.get("/geocode", response_model=list[GeocodeItem])
+def geocode_place_search(
+    q: str,
+    limit: int = 8,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Busca lugares vía Nominatim (OpenStreetMap). Sesión requerida para limitar abuso.
+    Resultados priorizados en España (countrycodes=es).
+    """
+    query = (q or "").strip()
+    if len(query) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Escribe al menos 2 caracteres para buscar.",
+        )
+    lim = max(1, min(int(limit), 10))
+
+    params = {
+        "q": query,
+        "format": "json",
+        "limit": str(lim),
+        "addressdetails": "0",
+        "countrycodes": "es",
+    }
+    headers = {
+        "User-Agent": _NOMINATIM_UA,
+        "Accept-Language": "es,en;q=0.8",
+    }
+
+    try:
+        r = requests.get(
+            _NOMINATIM_SEARCH,
+            params=params,
+            headers=headers,
+            timeout=14,
+        )
+        r.raise_for_status()
+        rows = r.json()
+        if not isinstance(rows, list):
+            rows = []
+    except requests.RequestException as e:
+        _log_debug(f"nominatim search: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail="El servicio de búsqueda no respondió. Prueba otra vez en unos segundos.",
+        )
+
+    out: list[GeocodeItem] = []
+    for item in rows[:lim]:
+        try:
+            lat = float(item["lat"])
+            lon = float(item["lon"])
+            label = str(item.get("display_name") or f"{lat:.5f}, {lon:.5f}")
+            out.append(GeocodeItem(lat=lat, lng=lon, label=label))
+        except (KeyError, TypeError, ValueError):
+            continue
+
+    return out
+
+
+_OSRM_MAX_WAYPOINTS = 25
+_OSRM_MAX_RESPONSE_VERTICES = 1600
+_OSRM_TIMEOUT_S = 35
+_VALHALLA_TIMEOUT_S = 45
+
+
+def _decode_polyline6(encoded: str) -> list[list[float]]:
+    """Decodifica polyline con precisión 6 (Valhalla/Google). Devuelve [[lng, lat], ...]."""
+    if not encoded or not isinstance(encoded, str):
+        return []
+    coordinates: list[list[float]] = []
+    index = 0
+    lat = 0
+    lng = 0
+    length = len(encoded)
+    while index < length:
+        result = 0
+        shift = 0
+        while True:
+            if index >= length:
+                return coordinates
+            b = ord(encoded[index]) - 63
+            index += 1
+            result |= (b & 0x1F) << shift
+            shift += 5
+            if b < 0x20:
+                break
+        dlat = ~(result >> 1) if (result & 1) else (result >> 1)
+        lat += dlat
+        result = 0
+        shift = 0
+        while True:
+            if index >= length:
+                return coordinates
+            b = ord(encoded[index]) - 63
+            index += 1
+            result |= (b & 0x1F) << shift
+            shift += 5
+            if b < 0x20:
+                break
+        dlng = ~(result >> 1) if (result & 1) else (result >> 1)
+        lng += dlng
+        coordinates.append([lng / 1e6, lat / 1e6])
+    return coordinates
+
+
+def _merge_valhalla_leg_shapes(legs: list[dict]) -> list[list[float]]:
+    full: list[list[float]] = []
+    for leg in legs:
+        part = _decode_polyline6(str(leg.get("shape") or ""))
+        if not part:
+            continue
+        if full and part:
+            a, b = full[-1], part[0]
+            if abs(a[0] - b[0]) < 1e-7 and abs(a[1] - b[1]) < 1e-7:
+                part = part[1:]
+        full.extend(part)
+    return full
+
+
+def _dedupe_coords_osrm(coords: list[list[float]]) -> list[list[float]]:
+    out: list[list[float]] = []
+    for lng, lat in coords:
+        lng_f, lat_f = float(lng), float(lat)
+        if out:
+            plng, plat = out[-1]
+            if abs(plng - lng_f) < 1e-8 and abs(plat - lat_f) < 1e-8:
+                continue
+        out.append([lng_f, lat_f])
+    return out
+
+
+def _decimate_line_coords(coords: list[list[float]], max_n: int) -> list[list[float]]:
+    if len(coords) <= max_n:
+        return coords
+    n = len(coords)
+    out: list[list[float]] = []
+    for i in range(max_n):
+        idx = int(round(i * (n - 1) / max(1, max_n - 1)))
+        idx = max(0, min(n - 1, idx))
+        out.append(coords[idx])
+    return out
+
+
+class OsrmRouteRequest(BaseModel):
+    coordinates: list[list[float]]
+
+    @field_validator("coordinates")
+    @classmethod
+    def validate_coords(cls, v: list) -> list:
+        if not v or len(v) < 2:
+            raise ValueError("Al menos 2 coordenadas [lng, lat].")
+        if len(v) > _OSRM_MAX_WAYPOINTS:
+            raise ValueError(f"Como máximo {_OSRM_MAX_WAYPOINTS} puntos de paso.")
+        for pair in v:
+            if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+                raise ValueError("Cada punto debe ser [lng, lat].")
+            lng, lat = float(pair[0]), float(pair[1])
+            if not (-180.0 <= lng <= 180.0 and -90.0 <= lat <= 90.0):
+                raise ValueError("Coordenadas fuera de rango.")
+        return v
+
+
+class OsrmRouteResponse(BaseModel):
+    geojson: str
+    distance_m: float = 0.0
+    duration_s: float = 0.0
+
+
+class OsrmGuidanceStep(BaseModel):
+    distance_m: float = 0.0
+    duration_s: float = 0.0
+    instruction_en: str = ""
+    street_name: str = ""
+    location_lng: float
+    location_lat: float
+    maneuver_type: Optional[str] = None
+    maneuver_modifier: Optional[str] = None
+    source: Optional[str] = None
+
+
+class OsrmGuidanceResponse(BaseModel):
+    geojson: str
+    distance_m: float = 0.0
+    duration_s: float = 0.0
+    steps: list[OsrmGuidanceStep]
+    engine: str = "osrm"
+
+
+def _parse_osrm_guidance_steps(data: dict) -> list[OsrmGuidanceStep]:
+    steps_out: list[OsrmGuidanceStep] = []
+    routes = data.get("routes") or []
+    if not routes:
+        return steps_out
+    for leg in routes[0].get("legs") or []:
+        for step in leg.get("steps") or []:
+            maneuver = step.get("maneuver") or {}
+            loc = maneuver.get("location")
+            if not isinstance(loc, (list, tuple)) or len(loc) < 2:
+                continue
+            try:
+                lng_f = float(loc[0])
+                lat_f = float(loc[1])
+            except (TypeError, ValueError):
+                continue
+            steps_out.append(
+                OsrmGuidanceStep(
+                    distance_m=float(step.get("distance") or 0.0),
+                    duration_s=float(step.get("duration") or 0.0),
+                    instruction_en=str(maneuver.get("instruction") or ""),
+                    street_name=str(step.get("name") or ""),
+                    location_lng=lng_f,
+                    location_lat=lat_f,
+                    maneuver_type=maneuver.get("type"),
+                    maneuver_modifier=maneuver.get("modifier"),
+                    source="osrm",
+                )
+            )
+    return steps_out
+
+
+def _fetch_osrm_guidance_response(coords: list[list[float]]) -> OsrmGuidanceResponse:
+    base = settings.osrm_base_url.strip().rstrip("/")
+    profile = (settings.osrm_profile or "driving").strip().strip("/") or "driving"
+    coord_str = ";".join(f"{c[0]},{c[1]}" for c in coords)
+    url = f"{base}/route/v1/{profile}/{coord_str}"
+    params = {
+        "overview": "full",
+        "geometries": "geojson",
+        "steps": "true",
+    }
+    headers = {
+        "User-Agent": _NOMINATIM_UA,
+        "Accept": "application/json",
+    }
+
+    try:
+        r = requests.get(url, params=params, headers=headers, timeout=_OSRM_TIMEOUT_S)
+        r.raise_for_status()
+        data = r.json()
+    except requests.RequestException as e:
+        _log_debug(f"osrm guidance request: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail="El servicio OSRM no respondió. Si usas el servidor de demostración, puede estar saturado; prueba más tarde o configura OSRM_BASE_URL.",
+        )
+    except ValueError as e:
+        _log_debug(f"osrm guidance json: {e}")
+        raise HTTPException(status_code=502, detail="Respuesta OSRM inválida.")
+
+    if data.get("code") != "Ok":
+        msg = data.get("message") or data.get("code") or "No se pudo calcular la ruta."
+        raise HTTPException(status_code=400, detail=str(msg))
+
+    routes = data.get("routes") or []
+    if not routes:
+        raise HTTPException(status_code=400, detail="OSRM no devolvió ninguna ruta.")
+
+    geom = routes[0].get("geometry") or {}
+    if geom.get("type") != "LineString":
+        raise HTTPException(
+            status_code=502,
+            detail="Formato de geometría OSRM inesperado.",
+        )
+
+    line_coords = geom.get("coordinates") or []
+    try:
+        parsed = [[float(x), float(y)] for x, y in line_coords]
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=502, detail="Coordenadas OSRM inválidas.")
+
+    parsed = _decimate_line_coords(parsed, _OSRM_MAX_RESPONSE_VERTICES)
+    canonical = {"type": "LineString", "coordinates": parsed}
+    geojson_str = json.dumps(canonical, separators=(",", ":"))
+
+    distance_m = float(routes[0].get("distance") or 0.0)
+    duration_s = float(routes[0].get("duration") or 0.0)
+    steps = _parse_osrm_guidance_steps(data)
+
+    return OsrmGuidanceResponse(
+        geojson=geojson_str,
+        distance_m=distance_m,
+        duration_s=duration_s,
+        steps=steps,
+        engine="osrm",
+    )
+
+
+def _parse_valhalla_trip_to_response(trip: dict) -> OsrmGuidanceResponse:
+    legs = trip.get("legs") or []
+    if not legs:
+        raise HTTPException(status_code=502, detail="Valhalla no devolvió tramos de ruta.")
+
+    full_line = _merge_valhalla_leg_shapes(legs)
+    if len(full_line) < 2:
+        raise HTTPException(status_code=502, detail="Geometría Valhalla vacía.")
+
+    summary = trip.get("summary") or {}
+    units_raw = str(trip.get("units") or "kilometers").lower()
+    use_miles = units_raw.startswith("mi")
+
+    length_raw = float(summary.get("length") or 0.0)
+    distance_m = length_raw * 1609.344 if use_miles else length_raw * 1000.0
+    duration_s = float(summary.get("time") or 0.0)
+
+    steps_out: list[OsrmGuidanceStep] = []
+    for leg in legs:
+        decoded = _decode_polyline6(str(leg.get("shape") or ""))
+        if not decoded:
+            continue
+        for m in leg.get("maneuvers") or []:
+            bi = int(m.get("begin_shape_index", 0))
+            if bi < 0 or bi >= len(decoded):
+                continue
+            lng_f, lat_f = float(decoded[bi][0]), float(decoded[bi][1])
+            seg_len = float(m.get("length") or 0.0)
+            seg_m = seg_len * 1609.344 if use_miles else seg_len * 1000.0
+            streets = m.get("street_names") or []
+            street_name = str(streets[0]) if streets else ""
+            mt = m.get("type")
+            steps_out.append(
+                OsrmGuidanceStep(
+                    distance_m=seg_m,
+                    duration_s=float(m.get("time") or 0.0),
+                    instruction_en=str(m.get("instruction") or ""),
+                    street_name=street_name,
+                    location_lng=lng_f,
+                    location_lat=lat_f,
+                    maneuver_type=str(mt) if mt is not None else None,
+                    maneuver_modifier=None,
+                    source="valhalla",
+                )
+            )
+
+    parsed = _decimate_line_coords(full_line, _OSRM_MAX_RESPONSE_VERTICES)
+    geojson_str = json.dumps(
+        {"type": "LineString", "coordinates": parsed},
+        separators=(",", ":"),
+    )
+
+    return OsrmGuidanceResponse(
+        geojson=geojson_str,
+        distance_m=distance_m,
+        duration_s=duration_s,
+        steps=steps_out,
+        engine="valhalla",
+    )
+
+
+def _call_valhalla_guidance_once(coords: list[list[float]], costing: str) -> OsrmGuidanceResponse:
+    base = settings.valhalla_base_url.strip().rstrip("/")
+    url = f"{base}/route"
+    lang = (settings.valhalla_guidance_language or "es-ES").strip()
+    body: dict = {
+        "locations": [{"lon": float(c[0]), "lat": float(c[1])} for c in coords],
+        "costing": costing.strip().lower(),
+        "units": "kilometers",
+        "language": lang,
+        "directions_options": {"units": "kilometers", "language": lang},
+    }
+    headers = {
+        "User-Agent": _NOMINATIM_UA,
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        r = requests.post(url, json=body, headers=headers, timeout=_VALHALLA_TIMEOUT_S)
+    except requests.RequestException as e:
+        _log_debug(f"valhalla request: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail="El servicio Valhalla no respondió. Comprueba VALHALLA_BASE_URL y la red.",
+        )
+
+    try:
+        data = r.json()
+    except ValueError as e:
+        _log_debug(f"valhalla json: {e}")
+        raise HTTPException(status_code=502, detail="Respuesta Valhalla inválida.")
+
+    if r.status_code >= 400:
+        msg = (
+            data.get("error")
+            or data.get("status_message")
+            or data.get("detail")
+            or (r.text[:400] if r.text else "")
+        )
+        detail = str(msg) if msg else f"Valhalla HTTP {r.status_code}"
+        raise HTTPException(
+            status_code=502 if r.status_code >= 500 else 400,
+            detail=detail,
+        )
+
+    trip = data.get("trip")
+    if not isinstance(trip, dict):
+        raise HTTPException(status_code=502, detail="Respuesta Valhalla sin campo trip.")
+
+    status = trip.get("status")
+    if status is not None and status != 0:
+        raise HTTPException(
+            status_code=400,
+            detail=str(trip.get("status_message") or "Valhalla no calculó la ruta."),
+        )
+
+    return _parse_valhalla_trip_to_response(trip)
+
+
+def _fetch_valhalla_guidance_response(coords: list[list[float]]) -> OsrmGuidanceResponse:
+    costing_primary = (settings.valhalla_costing or "motorcycle").strip().lower()
+    try_first = [costing_primary]
+    if costing_primary != "auto":
+        try_first.append("auto")
+
+    last_exc: Optional[HTTPException] = None
+    for costing in try_first:
+        try:
+            return _call_valhalla_guidance_once(coords, costing)
+        except HTTPException as e:
+            last_exc = e
+            if e.status_code == 400 and costing != try_first[-1]:
+                _log_debug(f"valhalla costing '{costing}' falló: {e.detail}; probando auto.")
+                continue
+            raise
+    if last_exc:
+        raise last_exc
+    raise HTTPException(status_code=502, detail="Valhalla no disponible.")
+
+
+@router.post("/route-osrm", response_model=OsrmRouteResponse)
+def route_osrm_drive(
+    body: OsrmRouteRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Calcula una ruta por carretera entre varios waypoints usando OSRM (perfil por defecto: driving).
+    Requiere sesión. Configura OSRM_BASE_URL para tu instancia en producción.
+    """
+    coords = _dedupe_coords_osrm(body.coordinates)
+    if len(coords) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Tras quitar puntos duplicados quedan menos de 2 coordenadas.",
+        )
+
+    base = settings.osrm_base_url.strip().rstrip("/")
+    profile = (settings.osrm_profile or "driving").strip().strip("/") or "driving"
+    coord_str = ";".join(f"{c[0]},{c[1]}" for c in coords)
+    url = f"{base}/route/v1/{profile}/{coord_str}"
+    params = {
+        "overview": "full",
+        "geometries": "geojson",
+        "steps": "false",
+    }
+    headers = {
+        "User-Agent": _NOMINATIM_UA,
+        "Accept": "application/json",
+    }
+
+    try:
+        r = requests.get(url, params=params, headers=headers, timeout=_OSRM_TIMEOUT_S)
+        r.raise_for_status()
+        data = r.json()
+    except requests.RequestException as e:
+        _log_debug(f"osrm request: {e}")
+        raise HTTPException(
+            status_code=502,
+            detail="El servicio OSRM no respondió. Si usas el servidor de demostración, puede estar saturado; prueba más tarde o configura OSRM_BASE_URL.",
+        )
+    except ValueError as e:
+        _log_debug(f"osrm json: {e}")
+        raise HTTPException(status_code=502, detail="Respuesta OSRM inválida.")
+
+    if data.get("code") != "Ok":
+        msg = data.get("message") or data.get("code") or "No se pudo calcular la ruta."
+        raise HTTPException(status_code=400, detail=str(msg))
+
+    routes = data.get("routes") or []
+    if not routes:
+        raise HTTPException(status_code=400, detail="OSRM no devolvió ninguna ruta.")
+
+    geom = routes[0].get("geometry") or {}
+    if geom.get("type") != "LineString":
+        raise HTTPException(
+            status_code=502,
+            detail="Formato de geometría OSRM inesperado.",
+        )
+
+    line_coords = geom.get("coordinates") or []
+    try:
+        parsed = [[float(x), float(y)] for x, y in line_coords]
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=502, detail="Coordenadas OSRM inválidas.")
+
+    parsed = _decimate_line_coords(parsed, _OSRM_MAX_RESPONSE_VERTICES)
+    canonical = {"type": "LineString", "coordinates": parsed}
+    geojson_str = json.dumps(canonical, separators=(",", ":"))
+
+    distance_m = float(routes[0].get("distance") or 0.0)
+    duration_s = float(routes[0].get("duration") or 0.0)
+
+    return OsrmRouteResponse(
+        geojson=geojson_str,
+        distance_m=distance_m,
+        duration_s=duration_s,
+    )
+
+
+@router.post("/route-osrm-guidance", response_model=OsrmGuidanceResponse)
+def route_osrm_guidance(
+    body: OsrmRouteRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Igual que /route-osrm pero pidiendo pasos a OSRM para navegación guiada (maniobra a maniobra).
+    """
+    coords = _dedupe_coords_osrm(body.coordinates)
+    if len(coords) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Tras quitar puntos duplicados quedan menos de 2 coordenadas.",
+        )
+    return _fetch_osrm_guidance_response(coords)
+
+
+@router.post("/route-guidance", response_model=OsrmGuidanceResponse)
+def route_guidance(
+    body: OsrmRouteRequest,
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Navegación: Valhalla si VALHALLA_BASE_URL está definido (motor por defecto motorcycle → auto si falla);
+    si Valhalla falla, se usa OSRM como respaldo.
+    """
+    coords = _dedupe_coords_osrm(body.coordinates)
+    if len(coords) < 2:
+        raise HTTPException(
+            status_code=400,
+            detail="Tras quitar puntos duplicados quedan menos de 2 coordenadas.",
+        )
+    if settings.valhalla_base_url.strip():
+        try:
+            return _fetch_valhalla_guidance_response(coords)
+        except HTTPException as e:
+            _log_debug(f"route-guidance: Valhalla falló ({e.status_code}): {e.detail}; usando OSRM.")
+        except Exception as e:
+            _log_debug(f"route-guidance: Valhalla error inesperado: {e}; usando OSRM.")
+        return _fetch_osrm_guidance_response(coords)
+    return _fetch_osrm_guidance_response(coords)
 
 
 @router.get("/name/{url:path}")

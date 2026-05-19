@@ -5,6 +5,8 @@ Aplicación para un club de moto: **catálogo de plantillas de ruta**, **calenda
 ## Documentación detallada
 
 - **[Roles, permisos y límites](docs/ROLES_Y_PERMISOS.md)** — qué puede hacer un administrador de la app, un usuario normal, un organizador de una salida, el creador de un grupo y un visitante sin cuenta.
+- **[Valhalla (routing / navegación)](docs/VALHALLA.md)** — motor opcional para `/maps/route-guidance`; Docker Compose perfil `valhalla`, variables y **despliegue en producción (Render + VPS)**.
+- **[Valhalla en VPS (solo motor)](deploy/valhalla-standalone/README.md)** — `docker-compose` listo para una URL pública tipo `VALHALLA_BASE_URL`.
 
 ## Características principales
 
@@ -88,6 +90,9 @@ Opcionales útiles:
 | `MAX_PUBLICACIONES_SALIDA_POR_USUARIO_DIA` | Tope de salidas activas por día de salida y organizador para no admins; `0` = sin límite (por defecto 1). |
 | `MAX_UPLOAD_MB` | Tamaño máximo de subida de imágenes. |
 | `UPLOADS_DIR` | Directorio de ficheros subidos (fotos de salidas, logos de grupo). |
+| `VALHALLA_BASE_URL` | URL base de Valhalla (sin `/` final) para navegación vía `/maps/route-guidance`; vacío = solo OSRM. Detalle en [docs/VALHALLA.md](docs/VALHALLA.md). |
+| `VALHALLA_COSTING` | Costing Valhalla (por defecto `motorcycle`). |
+| `VALHALLA_GUIDANCE_LANGUAGE` | Idioma de maniobras (por defecto `es-ES`). |
 
 CORS incluye orígenes configurables y un patrón para red local / DynV6; revisa `backend/app/main.py` y `config.py` si despliegues en otro dominio.
 

@@ -33,3 +33,23 @@
   font-size: 14px;
   border: 1px solid #ddd;
 }
+
+.map-error--full {
+  box-sizing: border-box;
+  padding: 16px;
+  text-align: center;
+  line-height: 1.45;
+}
+
+/* Leaflet dentro del mismo recuadro que el iframe de Google (sin aspect-ratio rígido) */
+.google-map-embed .map-container.map-container-osm {
+  aspect-ratio: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+}
+
+.google-map-embed .map-container.map-container-osm .osm-route-map-wrap {
+  flex: 0 0 auto;
+}

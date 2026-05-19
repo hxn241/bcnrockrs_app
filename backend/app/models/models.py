@@ -101,6 +101,9 @@ class Ruta(Base):
     link_ruta = Column(Text, nullable=False)
     link_encuentro = Column(Text, nullable=False)
     link_restaurante = Column(Text, nullable=True)
+    # google: enlace Maps; osm: recorrido en GeJSON LineString en recorrido_geojson, link_ruta vacío.
+    map_source = Column(String(16), nullable=False, default="google")
+    recorrido_geojson = Column(Text, nullable=True)
     embed_recorrido_url = Column(Text, nullable=True)
     fecha = Column(String(50), default="Por definir")
     hora = Column(String(50), default="Por confirmar")

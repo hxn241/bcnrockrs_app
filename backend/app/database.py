@@ -41,6 +41,29 @@ _USER_EXTRA_COLUMNS = (
     ("moto_foto_3_filename", "VARCHAR(255)"),
 )
 
+_RUTA_EXTRA_COLUMNS = (
+    ("map_source", "VARCHAR(16) DEFAULT 'google'"),
+    ("recorrido_geojson", "TEXT"),
+)
+
+
+def _ensure_ruta_osm_columns() -> None:
+    """Añade columnas de rutas OpenStreetMap en BD existentes (sin Alembic)."""
+    try:
+        insp = inspect(engine)
+        if not insp.has_table("rutas"):
+            return
+        cols = {c["name"] for c in insp.get_columns("rutas")}
+        missing = [(n, t) for n, t in _RUTA_EXTRA_COLUMNS if n not in cols]
+        if not missing:
+            return
+        with engine.begin() as conn:
+            for name, sql_type in missing:
+                conn.execute(text(f"ALTER TABLE rutas ADD COLUMN {name} {sql_type}"))
+        logger.info("Columnas rutas (mapa) añadidas: %s", ", ".join(n for n, _ in missing))
+    except Exception as e:
+        logger.warning("No se pudieron añadir columnas mapa en rutas: %s", e)
+
 
 def _ensure_user_extra_columns() -> None:
     """Añade columnas opcionales de perfil en BD antiguas (sin Alembic)."""
@@ -78,4 +101,5 @@ def init_db():
     logger.info("Inicializando base de datos PostgreSQL...")
     Base.metadata.create_all(bind=engine)
     _ensure_user_extra_columns()
+    _ensure_ruta_osm_columns()
     logger.info("Base de datos inicializada correctamente.")

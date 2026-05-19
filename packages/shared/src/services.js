@@ -47,6 +47,7 @@ export function createServices(api) {
     getHistoricoRoutes: (filters) =>
       api.get('/rutas-publicadas/historico', listadoSalidasConfig(filters)),
     getRoutesByDate: (fecha) => api.get(`/rutas-publicadas/calendario/${fecha}`),
+    getById: (id) => api.get(`/rutas-publicadas/${id}`),
     publishRoute: (ruta) => api.post('/rutas-publicadas', ruta),
     addAttendee: (rutaId) => api.post(`/rutas-publicadas/${rutaId}/asistentes`),
     removeAttendee: (rutaId) => api.delete(`/rutas-publicadas/${rutaId}/asistentes`),
@@ -86,5 +87,14 @@ export function createServices(api) {
     deleteLogo: (grupoId) => api.delete(`/grupos/${grupoId}/logo`)
   }
 
-  return { authService, rutasService, rutasPublicadasService, gruposService }
+  const mapsService = {
+    geocode: (q, limit = 8) =>
+      api.get('/maps/geocode', { params: { q: String(q).trim(), limit } }),
+    routeOsrm: (coordinates) => api.post('/maps/route-osrm', { coordinates }),
+    routeOsrmGuidance: (coordinates) =>
+      api.post('/maps/route-osrm-guidance', { coordinates }),
+    routeGuidance: (coordinates) => api.post('/maps/route-guidance', { coordinates })
+  }
+
+  return { authService, rutasService, rutasPublicadasService, gruposService, mapsService }
 }

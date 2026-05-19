@@ -73,6 +73,25 @@ class Settings(BaseSettings):
     # Google Maps
     google_maps_api_key: str = ""
 
+    # OSRM (routing por carretera). Demo público por defecto; en producción mejor instancia propia.
+    osrm_base_url: str = Field(
+        default="https://router.project-osrm.org",
+        alias="OSRM_BASE_URL",
+    )
+    osrm_profile: str = Field(default="driving", alias="OSRM_PROFILE")
+
+    # Valhalla (routing + maniobras). Vacío = solo OSRM. Si está definido, /maps/route-guidance usa Valhalla con fallback a OSRM si falla.
+    valhalla_base_url: str = Field(default="", alias="VALHALLA_BASE_URL")
+    valhalla_costing: str = Field(
+        default="motorcycle",
+        alias="VALHALLA_COSTING",
+        description="p.ej. motorcycle, auto, bicycle",
+    )
+    valhalla_guidance_language: str = Field(
+        default="es-ES",
+        alias="VALHALLA_GUIDANCE_LANGUAGE",
+    )
+
     # Subidas (fotos de rutas pasadas)
     uploads_dir: str = str(_BACKEND_ROOT / "uploads")
     max_upload_mb: int = 8

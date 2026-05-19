@@ -77,3 +77,14 @@
 .open-map-btn:hover {
   color: var(--bcn-terracotta);
 }
+
+.map-preview-osm-title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.map-preview-osm .leaflet-container {
+  border-radius: 8px;
+}

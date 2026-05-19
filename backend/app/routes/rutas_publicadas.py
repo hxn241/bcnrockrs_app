@@ -229,6 +229,31 @@ def get_routes_by_date(
     return routes
 
 
+@router.get("/{ruta_publicada_id}", response_model=RutaPublicadaResponse)
+def get_published_route_by_id(
+    ruta_publicada_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional),
+):
+    route = (
+        db.query(RutaPublicada)
+        .options(
+            joinedload(RutaPublicada.ruta),
+            joinedload(RutaPublicada.organizador),
+            joinedload(RutaPublicada.asistentes).joinedload(Asistente.user),
+            joinedload(RutaPublicada.grupo),
+        )
+        .filter(RutaPublicada.id == ruta_publicada_id)
+        .filter(RutaPublicada.is_active.is_(True))
+        .first()
+    )
+    if not route:
+        raise HTTPException(status_code=404, detail="Route not found")
+    if not _usuario_puede_ver_salida(db, route, current_user):
+        raise HTTPException(status_code=404, detail="Route not found")
+    return route
+
+
 @router.post("", response_model=RutaPublicadaResponse)
 def publish_route(
     ruta_publicada: RutaPublicadaCreate,
