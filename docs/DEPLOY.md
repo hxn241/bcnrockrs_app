@@ -1,6 +1,6 @@
 # Guía de Deploy — KurveMaster
 
-## 1. Desarrollo local con Docker (recomendado)
+## 1. Desarrollo local con Docker
 
 ### Requisitos
 - Docker + Docker Compose instalados
@@ -34,33 +34,9 @@ DEBUG=True
 
 ---
 
-## 2. Desarrollo local SIN Docker (`start-dev.sh`)
+## 2. Deploy en producción: Render (backend) + Vercel (frontend)
 
-### Requisitos
-- Python 3.11+ con venv creado en `backend/venv`
-- Node.js 18+
-- PostgreSQL corriendo (nativo o `docker-compose up postgres`)
-
-### Configurar el backend
-
-```bash
-cp backend/.env.example backend/.env
-# Edita backend/.env y ajusta DATABASE_URL si es necesario
-```
-
-### Arrancar
-
-```bash
-./start-dev.sh
-```
-
-Abre dos terminales: una para el backend (puerto 8002) y otra para el frontend (puerto 3001).
-
----
-
-## 3. Deploy en producción: Render (backend) + Vercel (frontend)
-
-### 3.1 Render — Backend FastAPI + PostgreSQL
+### 2.1 Render — Backend FastAPI + PostgreSQL
 
 #### Paso 1: Crear base de datos PostgreSQL en Render
 1. En el dashboard de Render → **New → PostgreSQL**
@@ -79,10 +55,10 @@ Abre dos terminales: una para el backend (puerto 8002) y otra para el frontend (
 
 | Variable | Valor |
 |----------|-------|
+| `APP_ENV` | `prod` (activa los defaults de producción: DEBUG=False y CORS de prod) |
 | `DATABASE_URL` | La Internal Database URL de tu PostgreSQL en Render |
 | `SECRET_KEY` | Una clave aleatoria larga (ver abajo cómo generarla) |
-| `DEBUG` | `False` |
-| `CORS_ORIGINS` | `https://tu-app.vercel.app` (la URL de tu frontend en Vercel) |
+| `CORS_ORIGINS` | `https://tu-app.vercel.app` (tu frontend en Vercel; sobreescribe el default de `APP_ENV`) |
 | `GOOGLE_MAPS_API_KEY` | Tu clave de Google Maps (si la usas) |
 
 > **Generar SECRET_KEY segura:**
@@ -92,7 +68,7 @@ Abre dos terminales: una para el backend (puerto 8002) y otra para el frontend (
 
 ---
 
-### 3.2 Vercel — Frontend React/Vite
+### 2.2 Vercel — Frontend React/Vite
 
 #### Paso 1: Importar proyecto
 1. En Vercel → **Add New Project** → importa tu repositorio
@@ -103,22 +79,27 @@ Abre dos terminales: una para el backend (puerto 8002) y otra para el frontend (
 
 | Variable | Valor |
 |----------|-------|
-| `VITE_API_URL` | `https://tu-backend.onrender.com` (la URL pública de tu backend en Render) |
+| `VITE_APP_ENV` | `prod` (usa la URL de backend de producción definida en `apiBaseUrl.js`) |
+| `VITE_API_URL` | *(opcional)* `https://tu-backend.onrender.com` para forzar una URL exacta (gana al flag) |
 
 #### Paso 3: Deploy
 Vercel desplegará automáticamente en cada push a `main`.
 
 ---
 
-## 4. Resumen de variables de entorno
+## 3. Resumen de variables de entorno
+
+> El flag `APP_ENV` / `VITE_APP_ENV` (`local` | `prod`) selecciona los defaults.
+> Las variables explícitas (`DATABASE_URL`, `CORS_ORIGINS`, `DEBUG`, `VITE_API_URL`) siempre ganan al flag.
 
 ### Backend (`backend/.env` o env vars en Render)
 
 | Variable | Local Docker | Producción (Render) |
 |----------|-------------|---------------------|
-| `DATABASE_URL` | `postgresql://bcnrockers:bcnrockers_password@postgres:5432/bcnrockers_db` | Internal URL de Render PostgreSQL |
+| `APP_ENV` | `local` | `prod` |
+| `DATABASE_URL` | `postgresql://bcnrockers:bcnrockers_password@postgres:5432/bcnrockers_db` *(lo pasa docker-compose)* | Internal URL de Render PostgreSQL |
 | `SECRET_KEY` | cualquier valor | **clave aleatoria segura** |
-| `DEBUG` | `True` | `False` |
+| `DEBUG` | *(default del flag: `True`)* | *(default del flag: `False`)* |
 | `CORS_ORIGINS` | *(vacío — usa defaults)* | `https://tu-app.vercel.app` |
 | `GOOGLE_MAPS_API_KEY` | *(opcional)* | Tu clave de Google Maps |
 
@@ -126,11 +107,12 @@ Vercel desplegará automáticamente en cada push a `main`.
 
 | Variable | Local Docker | Producción (Vercel) |
 |----------|-------------|---------------------|
-| `VITE_API_URL` | `http://localhost:8002` | `https://tu-backend.onrender.com` |
+| `VITE_APP_ENV` | `local` | `prod` |
+| `VITE_API_URL` | *(default del flag: `http://localhost:8002`)* | *(default del flag: `https://tu-backend.onrender.com`)* |
 
 ---
 
-## 5. Primer arranque en producción — migraciones
+## 4. Primer arranque en producción — migraciones
 
 Tras el primer deploy en Render, las tablas se crean automáticamente al arrancar el backend (via `init_db()` en startup). No necesitas ejecutar migraciones manualmente.
 

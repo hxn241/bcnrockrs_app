@@ -2,7 +2,7 @@ import axios from 'axios'
 import { getApiBaseUrl } from '../utils/apiBaseUrl'
 
 // ──────────────────────────────────────────────
-// createApiClient — (antes en @bcnrockrs/shared)
+// createApiClient
 // ──────────────────────────────────────────────
 function createApiClient({ baseURL, getToken }) {
   const api = axios.create({
@@ -25,7 +25,7 @@ function createApiClient({ baseURL, getToken }) {
 }
 
 // ──────────────────────────────────────────────
-// createServices — (antes en @bcnrockrs/shared)
+// createServices
 // ──────────────────────────────────────────────
 function listadoSalidasConfig(filters) {
   if (!filters || typeof filters !== 'object') return undefined

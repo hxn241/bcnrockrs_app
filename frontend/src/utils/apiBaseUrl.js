@@ -1,18 +1,30 @@
 /**
+ * URL base del API según el flag VITE_APP_ENV ("local" | "prod").
+ * PLACEHOLDER: reemplaza la URL de prod por tu backend real en Render.
+ */
+const APP_ENV_API = {
+  local: 'http://localhost:8002',
+  prod: 'https://tu-backend.onrender.com',
+}
+
+/**
  * URL base del API en el navegador.
  *
+ * - El flag VITE_APP_ENV ("local" | "prod") elige la URL base por defecto.
+ * - VITE_API_URL, si está definida, tiene prioridad sobre el flag (override manual).
  * - Si VITE_API_URL apunta a un dominio externo (producción), se usa tal cual.
  * - Si abres el front por IP (p. ej. móvil en http://192.168.1.41:3001), apuntamos
  *   al mismo host con el puerto definido en VITE_API_URL (p. ej. 8002), no a localhost.
- * - En localhost se usa el valor de VITE_API_URL o el fallback.
+ * - En localhost se usa el valor configurado directamente.
  */
 export function getApiBaseUrl() {
+  const appEnv = (import.meta.env.VITE_APP_ENV || 'local').trim().toLowerCase()
   const fromEnv = import.meta.env.VITE_API_URL
-  const fallback = 'http://localhost:8002'
+  const fallback = APP_ENV_API[appEnv] || APP_ENV_API.local
   const base = fromEnv || fallback
 
   if (typeof window === 'undefined') {
-    return base
+    return base 
   }
 
   const { hostname } = window.location
