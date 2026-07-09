@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -9,7 +10,15 @@ from app.database import init_db
 from app.routes import auth_router, rutas_router, rutas_publicadas_router, grupos_router
 from app.routes.maps import router as maps_router
 
-app = FastAPI(title=settings.app_name, debug=settings.debug)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Arranque: crea las tablas si no existen.
+    init_db()
+    yield
+
+
+app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 
 # CORS: orígenes fijos + regex para móvil/LAN (192.168.x, 10.x, 172.16–31.x) y túnel DynV6
 _CORS_LAN_DYNV6 = (
@@ -25,11 +34,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Initialize database
-@app.on_event("startup")
-def startup():
-    init_db()
 
 # Include routers
 app.include_router(auth_router)

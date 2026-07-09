@@ -1,9 +1,19 @@
 from pathlib import Path
-from pydantic import Field, computed_field
+from pydantic import Field, computed_field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List, Optional
 
 _BACKEND_ROOT = Path(__file__).resolve().parent.parent
+
+# Clave por defecto (solo válida en local). En prod se rechaza al arrancar.
+_DEFAULT_SECRET_KEY = "tu-clave-secreta-cambiar-en-produccion"
+
+# Placeholders conocidos e inseguros (config.py y docker-compose.yml). Ninguno
+# puede usarse en producción: son públicos y están en el repositorio.
+_INSECURE_SECRET_KEYS = {
+    _DEFAULT_SECRET_KEY,
+    "tu-clave-super-segura-cambiar-en-produccion",
+}
 
 # Orígenes CORS por defecto (local + LAN). En producción añade tu dominio
 # de Vercel/frontend via la variable de entorno CORS_ORIGINS (separados por coma).
@@ -73,7 +83,7 @@ class Settings(BaseSettings):
     database_url_raw: str = Field(default="", alias="DATABASE_URL")
 
     # JWT
-    secret_key: str = "tu-clave-secreta-cambiar-en-produccion"
+    secret_key: str = _DEFAULT_SECRET_KEY
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
@@ -108,6 +118,17 @@ class Settings(BaseSettings):
         if self.debug_raw is not None:
             return self.debug_raw
         return self._env_defaults["debug"]
+
+    @model_validator(mode="after")
+    def _validar_secret_en_prod(self):
+        # En producción no se permite arrancar con la SECRET_KEY por defecto
+        # del repositorio: firmaría JWT con una clave pública y conocida.
+        if self.app_env.strip().lower() == "prod" and self.secret_key in _INSECURE_SECRET_KEYS:
+            raise ValueError(
+                "Define una SECRET_KEY propia en producción (APP_ENV=prod). "
+                'Genera una con: python -c "import secrets; print(secrets.token_hex(32))"'
+            )
+        return self
 
     # App
     app_name: str = "KurveMaster API"
