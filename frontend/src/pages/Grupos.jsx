@@ -366,7 +366,7 @@ export default function Grupos() {
                                   {detalle.num_miembros === 1 ? 'persona en el grupo' : 'personas en el grupo'}
                                   {detalle.eres_creador && ' · Eres el creador'}
                                 </p>
-                                {detalle.eres_creador && (
+                                {(detalle.eres_creador || user?.is_admin) && (
                                   <div className="grupos-creador-zona-peligro">
                                     <button
                                       type="button"

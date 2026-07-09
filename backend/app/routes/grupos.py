@@ -442,10 +442,10 @@ def eliminar_grupo(
     g = db.query(Grupo).filter(Grupo.id == grupo_id).first()
     if not g:
         raise HTTPException(status_code=404, detail="Grupo no encontrado")
-    if g.creador_id != current_user.id:
+    if g.creador_id != current_user.id and not current_user.is_admin:
         raise HTTPException(
             status_code=403,
-            detail="Solo el creador del grupo puede eliminarlo.",
+            detail="Solo el creador del grupo o un administrador pueden eliminarlo.",
         )
 
     salidas = db.query(RutaPublicada).filter(RutaPublicada.grupo_id == grupo_id).all()
